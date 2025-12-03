@@ -1,4 +1,4 @@
-# CondingTickets App
+# CodingTickets App
 CodingTickets est une application à un client de pouvoir réserver un événement ou l'annuler, et de permettre à un organisateur de créer un événement avec la date et le prix et le nombre de places.
 
 ## Installation et Configuration
