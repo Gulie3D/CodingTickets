@@ -1,4 +1,4 @@
-package org.example.codingtickets;
+package org.example.codingtickets.web.controller;
 
 import java.io.*;
 
