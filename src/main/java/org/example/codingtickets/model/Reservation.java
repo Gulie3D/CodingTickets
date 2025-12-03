@@ -47,6 +47,7 @@ public class Reservation {
     // Getters / setters
     public Long getId() { return id; }
     public StatutReservation getStatut() { return statut; }
+    public Integer getNbPlaces() { return nbPlaces; }
     public Client getClient() { return client; }
     public Evenement getEvenement() { return evenement; }
 }
