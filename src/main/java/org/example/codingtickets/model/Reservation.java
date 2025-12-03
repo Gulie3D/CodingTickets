@@ -1,5 +1,7 @@
 package org.example.codingtickets.model;
 
+import org.example.codingtickets.exception.AnnulationTardiveException;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -24,10 +26,22 @@ public class Reservation {
         this.evenement = evenement;
     }
 
-    public void annuler() {
-        if (statut == StatutReservation.ANNULEE) return;
+    public void annuler(LocalDateTime maintenant) {
+        if (statut == StatutReservation.ANNULEE) {
+            return; // déjà annulée, on ne fait rien
+        }
+
+        // Règle J-1 : on ne peut annuler que si la date de l'événement
+        // est au moins dans 1 jour
+        LocalDateTime limite = maintenant.plusDays(1);
+        if (evenement.getDateEvenement().isBefore(limite)) {
+            throw new AnnulationTardiveException(
+                    "Annulation impossible : l'événement est trop proche."
+            );
+        }
+
         statut = StatutReservation.ANNULEE;
-        evenement.annulerPlaces(nbPlaces);
+        evenement.annulerPlaces(nbPlaces); // R3.2
     }
 
     // Getters / setters

@@ -1,5 +1,7 @@
 package org.example.codingtickets.model;
 
+import org.example.codingtickets.exception.PlacesInsuffisantesException;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -29,17 +31,27 @@ public class Evenement {
         this.organisateur = organisateur;
     }
 
-    // Règle métier simple
+    // ---------- MÉTHODES MÉTIER ----------
+
+    /**
+     * Réserve un certain nombre de places.
+     * Met à jour nbPlacesRestantes ou lève une exception.
+     */
     public void reserverPlaces(int nb) {
         if (nb <= 0) {
-            throw new IllegalArgumentException("Nombre de places doit être > 0");
+            throw new IllegalArgumentException("Le nombre de places doit être > 0");
         }
         if (nb > nbPlacesRestantes) {
-            throw new IllegalStateException("Pas assez de places restantes");
+            throw new PlacesInsuffisantesException(
+                    "Il ne reste que " + nbPlacesRestantes + " place(s) pour cet événement."
+            );
         }
         nbPlacesRestantes -= nb;
     }
 
+    /**
+     * Annule un certain nombre de places : remet les places dans le stock.
+     */
     public void annulerPlaces(int nb) {
         nbPlacesRestantes += nb;
         if (nbPlacesRestantes > nbPlacesTotales) {
