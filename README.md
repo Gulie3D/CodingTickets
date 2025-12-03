@@ -6,11 +6,9 @@ Sur IntelliJ, lancer le mvn clean package, récupérer le fichier war apparaissa
 Dans le run configuration faire edit configuration et choisir Tomcat, indiquer dans l'URL http://localhost:8080/CodingTickets/login et dans le deployement faire le + et choisir CodingTickets:war exploded, et indiquer plus bas sur la même page dans application context /CodingTickets. 
 
 ## Technologies
-- Spring Boot
-- RabbitMQ
-- PostgreSQL et Redis
-- Meilisearch
-- PipelinR
+- Tomcat 11.0.14
+- Java
+- IntelliJ
 
 ## Auteurs
 Our developer's backend squad : 
