@@ -1,4 +1,4 @@
-package org.example.codingtickets.controller;
+package org.example.codingtickets.service;
 
 import org.example.codingtickets.model.*;
 
