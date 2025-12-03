@@ -7,7 +7,7 @@ Dans le run configuration faire edit configuration et choisir Tomcat, indiquer d
 
 ## Technologies
 - Tomcat 11.0.14
-- Java
+- Java 17
 - IntelliJ
 
 ## Auteurs
