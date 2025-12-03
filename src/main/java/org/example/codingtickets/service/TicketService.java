@@ -133,8 +133,10 @@ public class TicketService {
             throw new IllegalArgumentException("Événement introuvable");
         }
 
+        // R1 + R2.1 : délégué à l'entité Evenement
         evenement.reserverPlaces(nbPlaces);
 
+        // R2.2 : montantTotal = nbPlaces * prixBase
         BigDecimal montantTotal =
                 evenement.getPrixBase().multiply(BigDecimal.valueOf(nbPlaces));
 
@@ -164,12 +166,14 @@ public class TicketService {
                         && r.getClient().getId().equals(client.getId()))
                 .findFirst();
 
-        if (opt.isPresent()) {
-            Reservation r = opt.get();
-            r.annuler();
-        } else {
-            throw new IllegalArgumentException("Réservation introuvable ou non liée à ce client");
+        if (opt.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Réservation introuvable ou non liée à ce client");
         }
+
+        Reservation r = opt.get();
+        // R3.1 + R3.2 : délégué à l'entité Reservation
+        r.annuler(LocalDateTime.now());
     }
 
     //pour les organisateurs
