@@ -31,7 +31,6 @@ public class Evenement {
         this.organisateur = organisateur;
     }
 
-    // ---------- MÉTHODES MÉTIER ----------
 
     /**
      * Réserve un certain nombre de places.

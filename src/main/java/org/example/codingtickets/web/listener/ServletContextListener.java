@@ -20,6 +20,6 @@ public class ServletContextListener implements jakarta.servlet.ServletContextLis
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        // Rien de spécial à faire à la fermeture pour l'instant
+        System.out.println("CodingTickets : Contexte detruit.");
     }
 }

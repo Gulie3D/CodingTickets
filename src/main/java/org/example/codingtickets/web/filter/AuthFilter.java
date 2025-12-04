@@ -14,22 +14,17 @@ public class AuthFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
 
-        // URL demandée
         String path = req.getServletPath();
 
-        // On laisse passer /login, /logout et les ressources statiques (si besoin)
         if (path.equals("/login") || path.startsWith("/css")) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Vérification session
         HttpSession session = req.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
-            // Utilisateur connecté -> OK
             chain.doFilter(request, response);
         } else {
-            // Pas connecté -> Redirection login
             resp.sendRedirect(req.getContextPath() + "/login");
         }
     }

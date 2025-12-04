@@ -26,7 +26,6 @@ public class TicketService {
         initialiserDonnees();
     }
 
-    // ========= MÉTHODES D'INIT =========
 
     private void initialiserDonnees() {
         // 1) Création des organisateurs
@@ -101,12 +100,24 @@ public class TicketService {
                 org2
         );
 
+        Evenement ev4 = new Evenement(
+                eventIdGen.getAndIncrement(),
+                "Crash Test Annulation",
+                "Cet événement est aujourd'hui : impossible d'annuler !",
+                LocalDateTime.now().plusHours(2), // A lieu dans 2 heures (donc < 24h)
+                "Salle de Test",
+                10,
+                10,
+                new BigDecimal("1.00"),
+                org2
+        );
+
         evenements.add(ev1);
         evenements.add(ev2);
         evenements.add(ev3);
+        evenements.add(ev4);
     }
 
-    // ========= MÉTHODES DU SERVICE =========
 
     public Utilisateur authentifier(String email, String motDePasse) {
         return utilisateurs.stream()
@@ -133,10 +144,8 @@ public class TicketService {
             throw new IllegalArgumentException("Événement introuvable");
         }
 
-        // R1 + R2.1 : délégué à l'entité Evenement
         evenement.reserverPlaces(nbPlaces);
 
-        // R2.2 : montantTotal = nbPlaces * prixBase
         BigDecimal montantTotal =
                 evenement.getPrixBase().multiply(BigDecimal.valueOf(nbPlaces));
 
@@ -172,7 +181,6 @@ public class TicketService {
         }
 
         Reservation r = opt.get();
-        // R3.1 + R3.2 : délégué à l'entité Reservation
         r.annuler(LocalDateTime.now());
     }
 
