@@ -11,14 +11,21 @@ Dans le run configuration faire edit configuration et choisir Tomcat, indiquer d
 - IntelliJ
 
 ## Auteurs
-Our developer's backend squad : 
+Equipe développeurs back-end : 
 - AMANI Liticia
 - BASLAM Ismail
 - BENSEGHIR Sabrina
 - CAUSSE Julie 
 
-## Product Backlog :
+## Product Backlog : 
+- En tant qu'utilisateur (client/organisateur), je veux pouvoir me connecter et me déconnecter.,
+- En tant que client, je veux voir l'historique des évènements disponibles.,
+- En tant que client, je veux pouvoir réserver des places.,
+- En tant que client, je veux pouvoir consulter mes réservations.,
+- En tant que client, je veux pouvoir annuler mes réservations.,
+- En tant qu' organisateur, je veux pouvoir créer et gérer des évènements.
 
+## Règles métier : 
 ### Règle 1 – Capacité de l’événement
 - R1.1 : Le nombre de places demandées doit être strictement positif.
 - R1.2 : On ne peut pas réserver plus de places que nbPlacesRestantes pour un événement.
