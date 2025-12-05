@@ -7,12 +7,11 @@ import org.example.codingtickets.model.Organisateur;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class JdbcOrganisateurDAO implements OrganisateurDAO {
 
     @Override
-    public Organisateur findById(long id) {
+    public Organisateur findById(Long id) {
         String sql = "SELECT * FROM organisateur WHERE id_organisateur = ?";
 
         try (Connection conn = ConnectionManager.getConnection();
@@ -42,7 +41,7 @@ public class JdbcOrganisateurDAO implements OrganisateurDAO {
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                list.add(new Organisateur(rs.getLong("id_organisateur")));
+                list.add(new Organisateur(rs.getLong("organisateur_id")));
             }
 
         } catch (SQLException e) {
@@ -50,11 +49,6 @@ public class JdbcOrganisateurDAO implements OrganisateurDAO {
         }
 
         return list;
-    }
-
-    @Override
-    public Optional<Organisateur> findById(Long id) {
-        return Optional.empty();
     }
 
     @Override

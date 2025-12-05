@@ -5,7 +5,7 @@ public class Organisateur extends Utilisateur {
         super(id, nom, email, motDePasse, Role.ORGANISATEUR);
     }
 
-    public Organisateur(long idOrganisateur) {
+    public Organisateur(Long id) {
         super();
     }
 }

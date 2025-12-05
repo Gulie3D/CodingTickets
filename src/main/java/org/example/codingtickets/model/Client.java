@@ -5,7 +5,7 @@ public class Client extends Utilisateur {
         super(id, nom, email, motDePasse, Role.CLIENT);
     }
 
-    public Client(long id) {
-        super(id);
+    public Client(Long id) {
+        super();
     }
 }

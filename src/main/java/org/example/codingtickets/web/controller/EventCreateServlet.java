@@ -2,7 +2,9 @@ package org.example.codingtickets.web.controller;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.example.codingtickets.model.Organisateur;
 import org.example.codingtickets.model.Utilisateur;
 import org.example.codingtickets.service.TicketService;
@@ -11,7 +13,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Servlet pour créer un événement (réservée aux organisateurs).

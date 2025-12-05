@@ -3,6 +3,7 @@ package org.example.codingtickets.dao.jdbc;
 import org.example.codingtickets.dao.ConnectionManager;
 import org.example.codingtickets.dao.ReservationDAO;
 import org.example.codingtickets.model.Reservation;
+import org.example.codingtickets.model.StatutReservation;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -92,7 +93,7 @@ public class JdbcReservationDAO implements ReservationDAO {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.fillInStackTrace();
         }
     }
 
@@ -102,8 +103,7 @@ public class JdbcReservationDAO implements ReservationDAO {
                 rs.getTimestamp("datereservation").toLocalDateTime(),
                 rs.getInt("nbredeplace"),
                 rs.getBigDecimal("montanttotal"),
-                Reservation.get,//rajouter pour le statut
-
+                (StatutReservation) rs.getObject("statut"),
                 null, // ultra simple : pas de client chargé
                 null  // ultra simple : pas d'évènement chargé
         );

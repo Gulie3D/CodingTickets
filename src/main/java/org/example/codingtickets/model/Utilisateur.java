@@ -15,19 +15,17 @@ public class Utilisateur {
         this.role = role;
     }
 
-    public Utilisateur(long id) {
-    }
-
     public Utilisateur() {
 
     }
+
 
     // Getters / setters
     public Long getId() { return id; }
     public String getNom() { return nom; }
     public String getEmail() { return email; }
     public String getMotDePasse() { return motDePasse; }
-    public String getRole() { return role; }
+    public Role getRole() { return role; }
 
     public void setId(Long id) { this.id = id; }
     public void setNom(String nom) { this.nom = nom; }

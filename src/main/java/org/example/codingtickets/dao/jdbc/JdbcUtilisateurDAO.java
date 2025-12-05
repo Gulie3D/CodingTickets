@@ -58,7 +58,7 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.fillInStackTrace();
         }
 
         return list;
@@ -82,7 +82,7 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
             ps.setString(1, utilisateur.getNom());
             ps.setString(2, utilisateur.getEmail());
             ps.setString(3, utilisateur.getMotDePasse());
-            ps.setString(4, utilisateur.getRole());
+            ps.setObject(4, utilisateur.getRole());
 
             ps.executeUpdate();
 
