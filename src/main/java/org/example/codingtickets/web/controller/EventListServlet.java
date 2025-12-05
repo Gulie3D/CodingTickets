@@ -3,7 +3,9 @@ package org.example.codingtickets.web.controller;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+import org.example.codingtickets.model.Client;
 import org.example.codingtickets.model.Evenement;
+import org.example.codingtickets.model.Organisateur;
 import org.example.codingtickets.model.Utilisateur;
 import org.example.codingtickets.service.TicketService;
 
@@ -28,10 +30,15 @@ public class EventListServlet extends HttpServlet {
 
         out.println("<html><body>");
         out.println("<h1>Liste des événements</h1>");
-
         if (user != null) {
-            out.println("<p>Connecté en tant que : <b>" + user.getNom() + "</b> (" + user.getEmail() + ")");
-            out.println(" | <a href='reservations/history'>Mes réservations</a>");
+            out.println("<p>Connecté en tant que : <b>" + user.getNom() + "</b> (" + user.getEmail() + ")</p>");
+            // Menu différent selon le rôle
+            if (user instanceof Client) {
+                out.println(" | <a href='reservations/history'>Mes réservations</a>");
+            } else if (user instanceof Organisateur) {
+                out.println(" | <a href='events/my'>Mes événements</a>");
+                out.println(" | <a href='events/create'>Créer un événement</a>");
+            }
             out.println(" | <a href='logout'>Déconnexion</a></p>");
         } else {
             out.println("<p><a href='login'>Se connecter</a></p>");
@@ -63,7 +70,8 @@ public class EventListServlet extends HttpServlet {
             out.println("<td>" + ev.getPrixBase() + " €</td>");
 
             out.println("<td>");
-            if (ev.getNbPlacesRestantes() > 0 && user != null) {
+            // Seuls les Clients peuvent réserver
+            if (ev.getNbPlacesRestantes() > 0 && user instanceof Client) {
                 out.println("<form action='reservations/create' method='post'>");
                 out.println("<input type='hidden' name='eventId' value='" + ev.getId() + "'>");
                 out.println("Qté: <input type='number' name='nbPlaces' value='1' min='1' max='" + ev.getNbPlacesRestantes() + "' style='width:40px'>");
@@ -71,6 +79,8 @@ public class EventListServlet extends HttpServlet {
                 out.println("</form>");
             } else if (user == null) {
                 out.println("<i>Connectez-vous</i>");
+            } else if (user instanceof Organisateur) {
+                out.println("-"); // Les organisateurs ne réservent pas
             } else {
                 out.println("Indisponible");
             }

@@ -133,7 +133,7 @@ public class TicketService {
 
     public Evenement trouverEvenementParId(long id) {
         return evenements.stream()
-                .filter(e -> e.getId() == id)
+                .filter(e -> e.getId().equals(id))
                 .findFirst()
                 .orElse(null);
     }
@@ -171,7 +171,7 @@ public class TicketService {
 
     public void annulerReservation(long idReservation, Client client) {
         Optional<Reservation> opt = reservations.stream()
-                .filter(r -> r.getId() == idReservation
+                .filter(r -> r.getId().equals(idReservation)
                         && r.getClient().getId().equals(client.getId()))
                 .findFirst();
 
@@ -205,5 +205,16 @@ public class TicketService {
         );
         evenements.add(ev);
         return ev;
+    }
+
+    /**
+     * Liste les événements créés par un organisateur spécifique.
+     * @param org L'organisateur connecté
+     * @return La liste de ses événements
+     */
+    public List<Evenement> listerEvenementsOrganisateur(Organisateur org) {
+        return evenements.stream()
+                .filter(e -> e.getOrganisateur().getId().equals(org.getId()))
+                .collect(Collectors.toList());
     }
 }
