@@ -48,6 +48,14 @@ public class Reservation {
     public Long getId() { return id; }
     public StatutReservation getStatut() { return statut; }
     public Integer getNbPlaces() { return nbPlaces; }
+    public BigDecimal getMontantTotal() { return montantTotal; }
     public Client getClient() { return client; }
     public Evenement getEvenement() { return evenement; }
+
+    public LocalDateTime getDateReservation() {
+
+        return dateReservation;
+    }
+
+
 }
