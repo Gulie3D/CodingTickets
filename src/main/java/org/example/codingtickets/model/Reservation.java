@@ -44,7 +44,7 @@ public class Reservation {
         evenement.annulerPlaces(nbPlaces); // R3.2
     }
 
-    // Getters / setters
+    // Getter / setter
     public Long getId() { return id; }
     public StatutReservation getStatut() { return statut; }
     public Integer getNbPlaces() { return nbPlaces; }
