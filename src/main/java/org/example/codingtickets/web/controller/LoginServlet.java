@@ -29,8 +29,8 @@ public class LoginServlet extends HttpServlet {
             resp.getWriter().println("<p style='color:red'>" + error + "</p>");
         }
 
-        resp.getWriter().println("<p>Comptes test client: alice@coding.fr / alice123</p>");
-        resp.getWriter().println("<p>Comptes test organisateur: prof.java@coding.fr / java123</p>");
+        resp.getWriter().println("<p>Compte test client: alice_cliente@coding.fr / alice123</p>");
+        resp.getWriter().println("<p>Compte test organisateur: bob_organisateur@coding.fr / bob123</p>");
         resp.getWriter().println("</body></html>");
     }
 

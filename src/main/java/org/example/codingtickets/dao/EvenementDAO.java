@@ -16,4 +16,6 @@ public interface EvenementDAO {
 
     void delete(Long id);
 
+    void update(Evenement evenement);
+
   }

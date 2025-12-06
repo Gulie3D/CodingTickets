@@ -1,8 +1,12 @@
 package org.example.codingtickets.dao.jdbc;
 
 import org.example.codingtickets.dao.ConnectionManager;
+import org.example.codingtickets.dao.DaoException; // Ton exception
 import org.example.codingtickets.dao.EvenementDAO;
+import org.example.codingtickets.dao.UtilisateurDAO;
 import org.example.codingtickets.model.Evenement;
+import org.example.codingtickets.model.Organisateur;
+import org.example.codingtickets.model.Utilisateur;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,6 +14,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class JdbcEvenementDAO implements EvenementDAO {
+
+    // Dépendance vers le DAO utilisateur pour remonter l'organisateur
+    private final UtilisateurDAO utilisateurDAO = new JdbcUtilisateurDAO();
 
     @Override
     public Evenement findById(long id) {
@@ -19,16 +26,15 @@ public class JdbcEvenementDAO implements EvenementDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
-            ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                return map(rs);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return map(rs);
+                }
             }
-
         } catch (SQLException e) {
-            e.fillInStackTrace();
+            throw new DaoException("Erreur lors de la récupération de l'événement ID: " + id, e);
         }
-
         return null;
     }
 
@@ -41,30 +47,30 @@ public class JdbcEvenementDAO implements EvenementDAO {
              Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
 
-            while (rs.next()) list.add(map(rs));
-
+            while (rs.next()) {
+                list.add(map(rs));
+            }
         } catch (SQLException e) {
-            e.fillInStackTrace();
+            throw new DaoException("Erreur lors du chargement de la liste des événements", e);
         }
-
         return list;
     }
 
     @Override
     public Optional<Evenement> findById(Long id) {
-        return Optional.empty();
+        return Optional.ofNullable(findById((long) id));
     }
 
     @Override
     public Evenement save(Evenement e) {
         String sql = """
-            INSERT INTO evenement(titre, description, dateevenement, lieu,
+            INSERT INTO evenement(titre, description, dateevenement, lieu,\s
                                   nbreplacetotale, nbreplacesrestantes, prix_base, id_organisateur)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """;
+           \s""";
 
         try (Connection conn = ConnectionManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, e.getTitre());
             ps.setString(2, e.getDescription());
@@ -73,16 +79,32 @@ public class JdbcEvenementDAO implements EvenementDAO {
             ps.setInt(5, e.getNbPlacesTotales());
             ps.setInt(6, e.getNbPlacesRestantes());
             ps.setBigDecimal(7, e.getPrixBase());
+
+            // Sécurité : On vérifie que l'organisateur existe dans l'objet avant de demander son ID
+            if (e.getOrganisateur() == null) {
+                throw new DaoException("Impossible de créer l'événement : Organisateur manquant.");
+            }
             ps.setLong(8, e.getOrganisateur().getId());
 
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
 
+            if (rowsAffected == 0) {
+                throw new DaoException("Échec de la création de l'événement, aucune ligne ajoutée.");
+            }
+
+            // Récupération de l'ID auto-généré
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    e.setId(generatedKeys.getLong(1));
+                } else {
+                    throw new DaoException("Échec de la création de l'événement, aucun ID obtenu.");
+                }
+            }
         } catch (SQLException ex) {
-            ex.fillInStackTrace();
+            throw new DaoException("Erreur SQL lors de la sauvegarde de l'événement : " + e.getTitre(), ex);
         }
         return e;
     }
-
 
     @Override
     public void delete(Long id) {
@@ -92,24 +114,60 @@ public class JdbcEvenementDAO implements EvenementDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
-            ps.executeUpdate();
+            int rows = ps.executeUpdate();
+
+            if (rows == 0) {
+               throw new DaoException("Aucun événement trouvé avec l'ID: " + id);
+            }
 
         } catch (SQLException e) {
-            e.fillInStackTrace();
+            throw new DaoException("Erreur lors de la suppression de l'événement ID: " + id, e);
         }
     }
 
     private Evenement map(ResultSet rs) throws SQLException {
-        return new Evenement(
-                rs.getLong("id_evenement"),
-                rs.getString("titre"),
-                rs.getString("description"),
-                rs.getTimestamp("dateevenement").toLocalDateTime(),
-                rs.getString("lieu"),
-                rs.getInt("nbreplacetotale"),
-                rs.getInt("nbreplacesrestantes"),
-                rs.getBigDecimal("prix_base"),
-                null // ultra simple : pas d’organisateur chargé
-        );
+        try {
+            // Récupération de l'ID organisateur (Clé étrangère)
+            long idOrga = rs.getLong("id_organisateur");
+
+            // Appel au DAO Utilisateur pour avoir l'objet complet
+            Utilisateur user = utilisateurDAO.findById(idOrga);
+            Organisateur organisateur;
+
+            // Vérification de type stricte + gestion du cas où l'utilisateur n'est pas trouvé
+            if (user instanceof Organisateur) {
+                organisateur = (Organisateur) user;
+            } else {
+                throw new DaoException("L'utilisateur lié à l'événement n'est pas un organisateur valide.");
+            }
+
+            return new Evenement(
+                    rs.getLong("id_evenement"),
+                    rs.getString("titre"),
+                    rs.getString("description"),
+                    rs.getTimestamp("dateevenement").toLocalDateTime(),
+                    rs.getString("lieu"),
+                    rs.getInt("nbreplacetotale"),
+                    rs.getInt("nbreplacesrestantes"),
+                    rs.getBigDecimal("prix_base"),
+                    organisateur
+            );
+        } catch (DaoException e) {
+            // Si le DAO Utilisateur plante, on remonte l'info
+            throw new DaoException("Erreur lors du mapping de l'événement (Problème UtilisateurDAO)", e);
+        }
+    }
+
+    @Override
+    public void update(Evenement e) {
+        String sql = "UPDATE evenement SET nbreplacesrestantes = ? WHERE id_evenement = ?";
+        try (Connection conn = ConnectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, e.getNbPlacesRestantes());
+            ps.setLong(2, e.getId());
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DaoException("Erreur update event", ex);
+        }
     }
 }

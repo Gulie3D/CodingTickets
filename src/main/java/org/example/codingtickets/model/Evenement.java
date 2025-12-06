@@ -71,5 +71,8 @@ public class Evenement {
     public Organisateur getOrganisateur() { return organisateur; }
 
     public void setId(Long id) { this.id = id; }
-    // … (ajoute les autres setters si tu veux)
+
+    public void setNbPlacesRestantes(int nbPlacesRestantes) {
+        this.nbPlacesRestantes = nbPlacesRestantes;
+    }
 }

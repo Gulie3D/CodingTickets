@@ -28,20 +28,15 @@ public class Reservation {
 
     public void annuler(LocalDateTime maintenant) {
         if (statut == StatutReservation.ANNULEE) {
-            return; // déjà annulée, on ne fait rien
+            return;
         }
 
-        // Règle J-1 : on ne peut annuler que si la date de l'événement
-        // est au moins dans 1 jour
         LocalDateTime limite = maintenant.plusDays(1);
         if (evenement.getDateEvenement().isBefore(limite)) {
-            throw new AnnulationTardiveException(
-                    "Annulation impossible : l'événement est trop proche."
-            );
+            throw new AnnulationTardiveException("Annulation impossible : l'événement est trop proche (moins de 24h).");
         }
 
-        statut = StatutReservation.ANNULEE;
-        evenement.annulerPlaces(nbPlaces); // R3.2
+        this.statut = StatutReservation.ANNULEE;
     }
 
     // Getter / setter
@@ -52,10 +47,10 @@ public class Reservation {
     public Client getClient() { return client; }
     public Evenement getEvenement() { return evenement; }
 
+    public Long setId(Long id) { return this.id = id;}
+
     public LocalDateTime getDateReservation() {
 
         return dateReservation;
     }
-
-
 }

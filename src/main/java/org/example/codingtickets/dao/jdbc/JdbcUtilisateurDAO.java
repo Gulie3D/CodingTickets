@@ -1,7 +1,10 @@
 package org.example.codingtickets.dao.jdbc;
 
 import org.example.codingtickets.dao.ConnectionManager;
+import org.example.codingtickets.dao.DaoException; // Ton exception
 import org.example.codingtickets.dao.UtilisateurDAO;
+import org.example.codingtickets.model.Client;
+import org.example.codingtickets.model.Organisateur;
 import org.example.codingtickets.model.Role;
 import org.example.codingtickets.model.Utilisateur;
 
@@ -15,24 +18,19 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
     @Override
     public Utilisateur findById(long id) {
         String sql = "SELECT * FROM utilisateur WHERE id_utilisateur = ?";
+
         try (Connection conn = ConnectionManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
-            ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                return new Utilisateur(
-                        rs.getLong("id_utilisateur"),
-                        rs.getString("nom"),
-                        rs.getString("email"),
-                        rs.getString("motdepasse"),
-                        Role.valueOf(rs.getString("role"))
-
-                );
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return map(rs);
+                }
             }
         } catch (SQLException e) {
-            e.fillInStackTrace();
+            throw new DaoException("Erreur lors de la récupération de l'utilisateur ID: " + id, e);
         }
         return null;
     }
@@ -47,52 +45,65 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                list.add(new Utilisateur(
-                        rs.getLong("id_utilisateur"),
-                        rs.getString("nom"),
-                        rs.getString("email"),
-                        rs.getString("motdepasse"),
-                        Role.valueOf(rs.getString("role"))
-
-                ));
+                list.add(map(rs));
             }
 
         } catch (SQLException e) {
-            e.fillInStackTrace();
+            throw new DaoException("Erreur lors de la récupération de la liste des utilisateurs", e);
         }
-
         return list;
     }
 
     @Override
     public Optional<Utilisateur> findById(Long id) {
-        return Optional.empty();
+        try {
+            return Optional.ofNullable(findById((long) id));
+        } catch (DaoException e) {
+            throw e;
+        }
     }
 
     @Override
     public Utilisateur save(Utilisateur utilisateur) {
-        String sql = """
-                INSERT INTO utilisateur(nom, email, motdepasse, role)
-                VALUES (?, ?, ?, ?)
-                """;
+        String sql = "INSERT INTO utilisateur(nom, email, motdepasse, role) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = ConnectionManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, utilisateur.getNom());
             ps.setString(2, utilisateur.getEmail());
             ps.setString(3, utilisateur.getMotDePasse());
-            ps.setObject(4, utilisateur.getRole());
 
-            ps.executeUpdate();
+            // Sécurité : éviter le NullPointerException si le rôle n'est pas défini
+            if (utilisateur.getRole() == null) {
+                throw new DaoException("Impossible de sauvegarder : Le rôle de l'utilisateur est manquant.");
+            }
+            ps.setString(4, utilisateur.getRole().name());
+
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new DaoException("Échec de la création de l'utilisateur, aucune ligne ajoutée.");
+            }
+
+            // Récupération de l'ID auto-généré
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    utilisateur.setId(generatedKeys.getLong(1));
+                } else {
+                    throw new DaoException("Échec de la création de l'utilisateur, aucun ID obtenu.");
+                }
+            }
 
         } catch (SQLException e) {
-            e.fillInStackTrace();
+            // Gestion spécifique des erreurs fréquentes (ex: email déjà pris)
+            if (e.getSQLState().startsWith("23")) { // Codes SQL d'intégrité (Duplicate entry)
+                throw new DaoException("Cet email est déjà utilisé : " + utilisateur.getEmail(), e);
+            }
+            throw new DaoException("Erreur lors de la sauvegarde de l'utilisateur " + utilisateur.getNom(), e);
         }
         return utilisateur;
     }
-
-
 
     @Override
     public void delete(Long id) {
@@ -102,10 +113,59 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
-            ps.executeUpdate();
+            int rows = ps.executeUpdate();
+
+            if (rows == 0) {
+               throw new DaoException("Aucun utilisateur trouvé avec l'ID: " + id);
+            }
 
         } catch (SQLException e) {
-            e.fillInStackTrace();
+            throw new DaoException("Erreur lors de la suppression de l'utilisateur ID: " + id, e);
         }
+    }
+
+    // Méthode utilitaire pour transformer une ligne SQL en Objet Java
+    private Utilisateur map(ResultSet rs) throws SQLException {
+        Long id = rs.getLong("id_utilisateur");
+        String nom = rs.getString("nom");
+        String email = rs.getString("email");
+        String mdp = rs.getString("motdepasse");
+        String roleStr = rs.getString("role");
+
+        Role role;
+        try {
+            // Sécurité : Si le champ est null ou si la string ne correspond pas à l'Enum
+            if (roleStr == null) {
+                throw new DaoException("Incohérence base de données : Rôle null pour l'utilisateur ID " + id);
+            }
+            role = Role.valueOf(roleStr); // Peut lancer IllegalArgumentException
+        } catch (IllegalArgumentException e) {
+            throw new DaoException("Rôle inconnu en base de données : " + roleStr, e);
+        }
+
+        // Utilisation du polymorphisme : On retourne un Client ou un Organisateur selon le rôle
+        // Cela permet aux instanceof de fonctionner plus tard dans ton code
+        if (role == Role.ORGANISATEUR) {
+            return new Organisateur(id, nom, email, mdp);
+        } else {
+            // Par défaut ou si c'est un CLIENT
+            return new Client(id, nom, email, mdp);
+        }
+    }
+
+    @Override
+    public Utilisateur findByEmailAndPassword(String email, String password) {
+        String sql = "SELECT * FROM utilisateur WHERE email = ? AND motdepasse = ?";
+        try (Connection conn = ConnectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setString(2, password);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return map(rs);
+            }
+        } catch (SQLException e) {
+            throw new DaoException("Erreur auth", e);
+        }
+        return null;
     }
 }
