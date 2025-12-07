@@ -6,19 +6,20 @@ import java.sql.SQLException;
 
 public class ConnectionManager {
 
-    private static final String URL = "jdbc:postgresql://localhost:5432/codingtickets";
-    private static final String USER = "postgres";
-    private static final String PASSWORD = "postgres";
-
-    static {
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver PostgreSQL introuvable", e);
-        }
-    }
-
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        String dbUrl = System.getenv("DB_URL");
+        String dbUser = System.getenv("DB_USER");
+        String dbPass = System.getenv("DB_PASSWORD");
+
+        if (dbUrl == null) dbUrl = "jdbc:postgresql://localhost:5432/codingtickets";
+        else dbUrl = dbUrl.trim(); // <--- Ajoute .trim() ici
+
+        if (dbUser == null) dbUser = "postgres";
+        else dbUser = dbUser.trim(); // <--- Ajoute .trim() ici
+
+        if (dbPass == null) dbPass = "postgres";
+        else dbPass = dbPass.trim(); // <--- Ajoute .trim() ici
+
+        return DriverManager.getConnection(dbUrl, dbUser, dbPass);
     }
 }
