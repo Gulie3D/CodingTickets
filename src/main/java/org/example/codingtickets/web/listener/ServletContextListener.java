@@ -9,10 +9,8 @@ public class ServletContextListener implements jakarta.servlet.ServletContextLis
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        // 1. Instancier le service
         TicketService ticketService = new TicketService();
 
-        // 2. Le stocker dans le contexte applicatif (accessible par toutes les servlets)
         sce.getServletContext().setAttribute("ticketService", ticketService);
 
         System.out.println("CodingTickets : TicketService initialisé et stocké dans le contexte.");

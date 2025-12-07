@@ -12,7 +12,7 @@ public interface ReservationDAO {
 
     Optional<Reservation> findById(Long id);
 
-    Reservation save(Reservation reservation);
+    void save(Reservation reservation);
 
     void delete(Long id);
 

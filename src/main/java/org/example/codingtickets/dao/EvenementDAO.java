@@ -12,7 +12,7 @@ public interface EvenementDAO {
 
     Optional<Evenement> findById(Long id);
 
-    Evenement save(Evenement evenement);
+    void save(Evenement evenement);
 
     void delete(Long id);
 

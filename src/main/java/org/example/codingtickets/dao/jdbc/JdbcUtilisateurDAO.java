@@ -1,8 +1,8 @@
 package org.example.codingtickets.dao.jdbc;
 
 import org.example.codingtickets.dao.ConnectionManager;
-import org.example.codingtickets.dao.DaoException; // Ton exception
 import org.example.codingtickets.dao.UtilisateurDAO;
+import org.example.codingtickets.exception.DaoException;
 import org.example.codingtickets.model.Client;
 import org.example.codingtickets.model.Organisateur;
 import org.example.codingtickets.model.Role;
@@ -64,7 +64,7 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
     }
 
     @Override
-    public Utilisateur save(Utilisateur utilisateur) {
+    public void save(Utilisateur utilisateur) {
         String sql = "INSERT INTO utilisateur(nom, email, motdepasse, role) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = ConnectionManager.getConnection();
@@ -74,7 +74,6 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
             ps.setString(2, utilisateur.getEmail());
             ps.setString(3, utilisateur.getMotDePasse());
 
-            // Sécurité : éviter le NullPointerException si le rôle n'est pas défini
             if (utilisateur.getRole() == null) {
                 throw new DaoException("Impossible de sauvegarder : Le rôle de l'utilisateur est manquant.");
             }
@@ -86,7 +85,6 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
                 throw new DaoException("Échec de la création de l'utilisateur, aucune ligne ajoutée.");
             }
 
-            // Récupération de l'ID auto-généré
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     utilisateur.setId(generatedKeys.getLong(1));
@@ -96,13 +94,11 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
             }
 
         } catch (SQLException e) {
-            // Gestion spécifique des erreurs fréquentes (ex: email déjà pris)
-            if (e.getSQLState().startsWith("23")) { // Codes SQL d'intégrité (Duplicate entry)
+            if (e.getSQLState().startsWith("23")) {
                 throw new DaoException("Cet email est déjà utilisé : " + utilisateur.getEmail(), e);
             }
             throw new DaoException("Erreur lors de la sauvegarde de l'utilisateur " + utilisateur.getNom(), e);
         }
-        return utilisateur;
     }
 
     @Override
@@ -124,7 +120,6 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
         }
     }
 
-    // Méthode utilitaire pour transformer une ligne SQL en Objet Java
     private Utilisateur map(ResultSet rs) throws SQLException {
         Long id = rs.getLong("id_utilisateur");
         String nom = rs.getString("nom");
@@ -134,21 +129,17 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
 
         Role role;
         try {
-            // Sécurité : Si le champ est null ou si la string ne correspond pas à l'Enum
             if (roleStr == null) {
                 throw new DaoException("Incohérence base de données : Rôle null pour l'utilisateur ID " + id);
             }
-            role = Role.valueOf(roleStr); // Peut lancer IllegalArgumentException
+            role = Role.valueOf(roleStr);
         } catch (IllegalArgumentException e) {
             throw new DaoException("Rôle inconnu en base de données : " + roleStr, e);
         }
 
-        // Utilisation du polymorphisme : On retourne un Client ou un Organisateur selon le rôle
-        // Cela permet aux instanceof de fonctionner plus tard dans ton code
         if (role == Role.ORGANISATEUR) {
             return new Organisateur(id, nom, email, mdp);
         } else {
-            // Par défaut ou si c'est un CLIENT
             return new Client(id, nom, email, mdp);
         }
     }

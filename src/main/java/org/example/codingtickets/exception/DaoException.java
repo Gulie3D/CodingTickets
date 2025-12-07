@@ -1,6 +1,5 @@
-package org.example.codingtickets.dao;
+package org.example.codingtickets.exception;
 
-// Hériter de RuntimeException permet d'utiliser l'exception sans forcer le try/catch partout
 public class DaoException extends RuntimeException {
 
     public DaoException(String message) {

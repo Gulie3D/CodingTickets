@@ -26,46 +26,8 @@ public class ReservationHistoryServlet extends HttpServlet {
         TicketService service = (TicketService) getServletContext().getAttribute("ticketService");
         List<Reservation> reservations = service.listerReservationsClient((Client) user);
 
-        resp.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
+        req.setAttribute("reservations", reservations);
 
-        out.println("<html><body>");
-        out.println("<h1>Mes Réservations</h1>");
-        out.println("<a href='" + req.getContextPath() + "/events'>Retour aux événements</a><hr/>");
-
-        String error = req.getParameter("error");
-        if (error != null) {
-            out.println("<div style='color:red; border:1px solid red; padding:10px; margin-bottom:10px;'>");
-            out.println("<strong>Erreur : </strong>" + error);
-            out.println("</div>");
-        }
-
-        String success = req.getParameter("success");
-        if (success != null) {
-            out.println("<div style='color:green; border:1px solid green; padding:10px; margin-bottom:10px;'>");
-            out.println(success);
-            out.println("</div>");
-        }
-
-        if (reservations.isEmpty()) {
-            out.println("<p>Vous n'avez aucune réservation.</p>");
-        } else {
-            out.println("<ul>");
-            for (Reservation r : reservations) {
-                out.println("<li>");
-                out.println("<strong>" + r.getEvenement().getTitre() + "</strong> le " + r.getEvenement().getDateEvenement());
-                out.println("<br>Places : " + r.getNbPlaces() + " | Statut : " + r.getStatut());
-
-                if (r.getStatut().toString().equals("CONFIRMEE")) {
-                    out.println("<form action='cancel' method='post' style='display:inline; margin-left:10px;'>");
-                    out.println("<input type='hidden' name='reservationId' value='" + r.getId() + "'>");
-                    out.println("<button type='submit' style='cursor:pointer; color:red;'>Annuler</button>");
-                    out.println("</form>");
-                }
-                out.println("</li><br>");
-            }
-            out.println("</ul>");
-        }
-        out.println("</body></html>");
+        req.getRequestDispatcher("/WEB-INF/jsp/reservations.jsp").forward(req, resp);
     }
 }

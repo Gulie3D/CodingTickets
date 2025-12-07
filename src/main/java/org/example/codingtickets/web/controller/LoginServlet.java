@@ -13,25 +13,7 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("text/html");
-        resp.getWriter().println("<html><body>");
-        resp.getWriter().println("<h1>Connexion</h1>");
-        // Formulaire minimal
-        resp.getWriter().println("<form method='post' action='login'>");
-        resp.getWriter().println("Email: <input type='text' name='email'><br>");
-        resp.getWriter().println("Password: <input type='password' name='password'><br>");
-        resp.getWriter().println("<input type='submit' value='Se connecter'>");
-        resp.getWriter().println("</form>");
-
-        // Affichage message d'erreur si présent
-        String error = (String) req.getAttribute("error");
-        if (error != null) {
-            resp.getWriter().println("<p style='color:red'>" + error + "</p>");
-        }
-
-        resp.getWriter().println("<p>Compte test client: alice_cliente@coding.fr / alice123</p>");
-        resp.getWriter().println("<p>Compte test organisateur: bob_organisateur@coding.fr / bob123</p>");
-        resp.getWriter().println("</body></html>");
+        req.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(req, resp);
     }
 
     @Override
@@ -39,19 +21,15 @@ public class LoginServlet extends HttpServlet {
         String email = req.getParameter("email");
         String password = req.getParameter("password");
 
-        // Récupération du service depuis le contexte (mis par le Listener)
         TicketService service = (TicketService) getServletContext().getAttribute("ticketService");
         Utilisateur user = service.authentifier(email, password);
 
         if (user != null) {
-            // Connexion réussie : on crée la session
-            HttpSession session = req.getSession();
-            session.setAttribute("user", user);
+            req.getSession().setAttribute("user", user);
             resp.sendRedirect(req.getContextPath() + "/events");
         } else {
-            // Échec
             req.setAttribute("error", "Email ou mot de passe incorrect");
-            doGet(req, resp); // On réaffiche le formulaire avec l'erreur
+            req.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(req, resp);
         }
     }
 }

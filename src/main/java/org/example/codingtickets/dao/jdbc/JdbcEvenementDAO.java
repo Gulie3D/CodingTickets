@@ -1,9 +1,9 @@
 package org.example.codingtickets.dao.jdbc;
 
 import org.example.codingtickets.dao.ConnectionManager;
-import org.example.codingtickets.dao.DaoException; // Ton exception
 import org.example.codingtickets.dao.EvenementDAO;
 import org.example.codingtickets.dao.UtilisateurDAO;
+import org.example.codingtickets.exception.DaoException;
 import org.example.codingtickets.model.Evenement;
 import org.example.codingtickets.model.Organisateur;
 import org.example.codingtickets.model.Utilisateur;
@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class JdbcEvenementDAO implements EvenementDAO {
-
-    // Dépendance vers le DAO utilisateur pour remonter l'organisateur
     private final UtilisateurDAO utilisateurDAO = new JdbcUtilisateurDAO();
 
     @Override
@@ -62,7 +60,7 @@ public class JdbcEvenementDAO implements EvenementDAO {
     }
 
     @Override
-    public Evenement save(Evenement e) {
+    public void save(Evenement e) {
         String sql = """
             INSERT INTO evenement(titre, description, dateevenement, lieu,\s
                                   nbreplacetotale, nbreplacesrestantes, prix_base, id_organisateur)
@@ -80,7 +78,6 @@ public class JdbcEvenementDAO implements EvenementDAO {
             ps.setInt(6, e.getNbPlacesRestantes());
             ps.setBigDecimal(7, e.getPrixBase());
 
-            // Sécurité : On vérifie que l'organisateur existe dans l'objet avant de demander son ID
             if (e.getOrganisateur() == null) {
                 throw new DaoException("Impossible de créer l'événement : Organisateur manquant.");
             }
@@ -92,7 +89,6 @@ public class JdbcEvenementDAO implements EvenementDAO {
                 throw new DaoException("Échec de la création de l'événement, aucune ligne ajoutée.");
             }
 
-            // Récupération de l'ID auto-généré
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     e.setId(generatedKeys.getLong(1));
@@ -103,7 +99,6 @@ public class JdbcEvenementDAO implements EvenementDAO {
         } catch (SQLException ex) {
             throw new DaoException("Erreur SQL lors de la sauvegarde de l'événement : " + e.getTitre(), ex);
         }
-        return e;
     }
 
     @Override
@@ -127,14 +122,11 @@ public class JdbcEvenementDAO implements EvenementDAO {
 
     private Evenement map(ResultSet rs) throws SQLException {
         try {
-            // Récupération de l'ID organisateur (Clé étrangère)
             long idOrga = rs.getLong("id_organisateur");
 
-            // Appel au DAO Utilisateur pour avoir l'objet complet
             Utilisateur user = utilisateurDAO.findById(idOrga);
             Organisateur organisateur;
 
-            // Vérification de type stricte + gestion du cas où l'utilisateur n'est pas trouvé
             if (user instanceof Organisateur) {
                 organisateur = (Organisateur) user;
             } else {
@@ -153,7 +145,6 @@ public class JdbcEvenementDAO implements EvenementDAO {
                     organisateur
             );
         } catch (DaoException e) {
-            // Si le DAO Utilisateur plante, on remonte l'info
             throw new DaoException("Erreur lors du mapping de l'événement (Problème UtilisateurDAO)", e);
         }
     }

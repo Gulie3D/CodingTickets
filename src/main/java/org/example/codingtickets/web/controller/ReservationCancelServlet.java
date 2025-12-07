@@ -29,16 +29,12 @@ public class ReservationCancelServlet extends HttpServlet {
             TicketService service = (TicketService) getServletContext().getAttribute("ticketService");
             service.annulerReservation(resId, (Client) user);
 
-            resp.sendRedirect("history?success=Reservation annulee avec succes");
-
-        } catch (AnnulationTardiveException e) {
-            String message = "Impossible d'annuler : l'événement est trop proche (moins de 24h).";
-            String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8);
-            resp.sendRedirect("history?error=" + encodedMessage);
+            String msg = URLEncoder.encode("Réservation annulée avec succès.", StandardCharsets.UTF_8);
+            resp.sendRedirect("history?success=" + msg);
 
         } catch (Exception e) {
-            e.fillInStackTrace();
-            resp.sendRedirect("history?error=" + URLEncoder.encode("Erreur technique lors de l'annulation.", StandardCharsets.UTF_8));
+            String msg = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
+            resp.sendRedirect("history?error=" + msg);
         }
     }
 }
