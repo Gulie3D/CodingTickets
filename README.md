@@ -89,7 +89,7 @@ montantTotal = nbPlaces × prixBase
 ### Règle 3 – Annulation de réservation
 - R3.1 : Une réservation ne peut être annulée que si l’événement n’est pas trop proche.
 version simplifiée : annulation toujours possible
-version “J-1” : annulation autorisée seulement si
+version “J-1” : annulation autorisée seulement si 
 dateEvenement >= (maintenant + 1 jour).
 
 - R3.2 : Lors d’une annulation acceptée :
