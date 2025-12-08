@@ -1,5 +1,7 @@
 package org.example.codingtickets.model;
 
+import org.example.codingtickets.exception.AnnulationTardiveException;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -24,15 +26,31 @@ public class Reservation {
         this.evenement = evenement;
     }
 
-    public void annuler() {
-        if (statut == StatutReservation.ANNULEE) return;
-        statut = StatutReservation.ANNULEE;
-        evenement.annulerPlaces(nbPlaces);
+    public void annuler(LocalDateTime maintenant) {
+        if (statut == StatutReservation.ANNULEE) {
+            return;
+        }
+
+        LocalDateTime limite = maintenant.plusDays(1);
+        if (evenement.getDateEvenement().isBefore(limite)) {
+            throw new AnnulationTardiveException("Annulation impossible : l'événement est trop proche (moins de 24h).");
+        }
+
+        this.statut = StatutReservation.ANNULEE;
     }
 
-    // Getters / setters
+    // Getter / setter
     public Long getId() { return id; }
     public StatutReservation getStatut() { return statut; }
+    public Integer getNbPlaces() { return nbPlaces; }
+    public BigDecimal getMontantTotal() { return montantTotal; }
     public Client getClient() { return client; }
     public Evenement getEvenement() { return evenement; }
+
+    public Long setId(Long id) { return this.id = id;}
+
+    public LocalDateTime getDateReservation() {
+
+        return dateReservation;
+    }
 }

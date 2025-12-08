@@ -1,145 +1,70 @@
 package org.example.codingtickets.service;
 
+import org.example.codingtickets.dao.EvenementDAO;
+import org.example.codingtickets.dao.ReservationDAO;
+import org.example.codingtickets.dao.UtilisateurDAO;
+import org.example.codingtickets.dao.jdbc.JdbcEvenementDAO;
+import org.example.codingtickets.dao.jdbc.JdbcReservationDAO;
+import org.example.codingtickets.dao.jdbc.JdbcUtilisateurDAO;
 import org.example.codingtickets.model.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 public class TicketService {
-
-    // Collections en mémoire
-    private final List<Utilisateur> utilisateurs = new ArrayList<>();
-    private final List<Evenement> evenements = new ArrayList<>();
-    private final List<Reservation> reservations = new ArrayList<>();
-
-    // Générateurs d'ID
-    private final AtomicLong userIdGen = new AtomicLong(1);
-    private final AtomicLong eventIdGen = new AtomicLong(1);
-    private final AtomicLong reservationIdGen = new AtomicLong(1);
+    private final UtilisateurDAO utilisateurDao;
+    private final EvenementDAO evenementDao;
+    private final ReservationDAO reservationDao;
 
     public TicketService() {
-        initialiserDonnees();
+        this.utilisateurDao = new JdbcUtilisateurDAO();
+        this.evenementDao = new JdbcEvenementDAO();
+        this.reservationDao = new JdbcReservationDAO();
     }
 
-    // ========= MÉTHODES D'INIT =========
-
-    private void initialiserDonnees() {
-        // 1) Création des organisateurs
-        Organisateur org1 = new Organisateur(
-                userIdGen.getAndIncrement(),
-                "Prof Java",
-                "prof.java@coding.fr",
-                "java123"
-        );
-
-        Organisateur org2 = new Organisateur(
-                userIdGen.getAndIncrement(),
-                "Prof Web",
-                "prof.web@coding.fr",
-                "web123"
-        );
-
-        // 2) Création des clients
-        Client client1 = new Client(
-                userIdGen.getAndIncrement(),
-                "Alice Client",
-                "alice@coding.fr",
-                "alice123"
-        );
-
-        Client client2 = new Client(
-                userIdGen.getAndIncrement(),
-                "Bob Client",
-                "bob@coding.fr",
-                "bob123"
-        );
-
-        utilisateurs.add(org1);
-        utilisateurs.add(org2);
-        utilisateurs.add(client1);
-        utilisateurs.add(client2);
-
-        // 3) Création des événements d'exemple
-        Evenement ev1 = new Evenement(
-                eventIdGen.getAndIncrement(),
-                "Atelier Java avancé",
-                "Découverte des servlets et de JDBC",
-                LocalDateTime.now().plusDays(7),
-                "Salle 101",
-                30,
-                30,
-                new BigDecimal("20.00"),
-                org1
-        );
-
-        Evenement ev2 = new Evenement(
-                eventIdGen.getAndIncrement(),
-                "Soirée Spring Boot",
-                "Introduction à Spring Boot",
-                LocalDateTime.now().plusDays(10),
-                "Salle 202",
-                50,
-                50,
-                new BigDecimal("25.00"),
-                org1
-        );
-
-        Evenement ev3 = new Evenement(
-                eventIdGen.getAndIncrement(),
-                "Workshop Front-End",
-                "HTML/CSS/JS pour débutants",
-                LocalDateTime.now().plusDays(5),
-                "Lab Web",
-                20,
-                20,
-                new BigDecimal("15.00"),
-                org2
-        );
-
-        evenements.add(ev1);
-        evenements.add(ev2);
-        evenements.add(ev3);
-    }
-
-    // ========= MÉTHODES DU SERVICE =========
-
+    /**
+     * Authentification via la BDD
+     */
     public Utilisateur authentifier(String email, String motDePasse) {
-        return utilisateurs.stream()
-                .filter(u -> u.getEmail().equalsIgnoreCase(email)
-                        && u.getMotDePasse().equals(motDePasse))
-                .findFirst()
-                .orElse(null);
+        return utilisateurDao.findByEmailAndPassword(email, motDePasse);
     }
 
+    /**
+     * Liste tous les événements depuis la BDD
+     */
     public List<Evenement> listerEvenements() {
-        return new ArrayList<>(evenements); // copie pour éviter les modifs externes
+        return evenementDao.findAll();
     }
 
+    /**
+     * Trouve un événement par ID
+     */
     public Evenement trouverEvenementParId(long id) {
-        return evenements.stream()
-                .filter(e -> e.getId() == id)
-                .findFirst()
-                .orElse(null);
+        return evenementDao.findById(id);
     }
 
-    public Reservation reserver(Client client, long idEvenement, int nbPlaces) {
-        Evenement evenement = trouverEvenementParId(idEvenement);
+    /**
+     * Effectue une réservation
+     * 1. Récupère l'événement
+     * 2. Vérifie et décrémente les places (Logique métier)
+     * 3. Met à jour l'événement en base
+     * 4. Sauvegarde la réservation en base
+     */
+    public void reserver(Client client, long idEvenement, int nbPlaces) {
+        Evenement evenement = evenementDao.findById(idEvenement);
+
         if (evenement == null) {
             throw new IllegalArgumentException("Événement introuvable");
         }
 
         evenement.reserverPlaces(nbPlaces);
+        evenementDao.update(evenement);
 
-        BigDecimal montantTotal =
-                evenement.getPrixBase().multiply(BigDecimal.valueOf(nbPlaces));
+        BigDecimal montantTotal = evenement.getPrixBase().multiply(BigDecimal.valueOf(nbPlaces));
 
         Reservation reservation = new Reservation(
-                reservationIdGen.getAndIncrement(),
+                0L, // ID temporaire, ignoré par le save
                 LocalDateTime.now(),
                 nbPlaces,
                 montantTotal,
@@ -148,40 +73,42 @@ public class TicketService {
                 evenement
         );
 
-        reservations.add(reservation);
-        return reservation;
+        reservationDao.save(reservation);
     }
 
+    /**
+     * Liste les réservations d'un client spécifique via la BDD
+     */
     public List<Reservation> listerReservationsClient(Client client) {
-        return reservations.stream()
-                .filter(r -> r.getClient().getId().equals(client.getId()))
-                .collect(Collectors.toList());
+        return reservationDao.findByClient(client.getId());
     }
 
+    /**
+     * Annule une réservation
+     */
     public void annulerReservation(long idReservation, Client client) {
-        Optional<Reservation> opt = reservations.stream()
-                .filter(r -> r.getId() == idReservation
-                        && r.getClient().getId().equals(client.getId()))
-                .findFirst();
+        Reservation r = reservationDao.findById(idReservation);
 
-        if (opt.isPresent()) {
-            Reservation r = opt.get();
-            r.annuler();
-        } else {
+        if (r == null || !r.getClient().getId().equals(client.getId())) {
             throw new IllegalArgumentException("Réservation introuvable ou non liée à ce client");
         }
+
+        r.annuler(LocalDateTime.now());
+        reservationDao.update(r);
+
+        Evenement evt = r.getEvenement();
+        evt.setNbPlacesRestantes(evt.getNbPlacesRestantes() + r.getNbPlaces());
+        evenementDao.update(evt);
     }
 
-    //pour les organisateurs
-    public Evenement creerEvenement(Organisateur org,
-                                    String titre,
-                                    String description,
-                                    LocalDateTime date,
-                                    String lieu,
-                                    int nbPlaces,
-                                    BigDecimal prixBase) {
+
+    /**
+     * Création d'événement pour les organisateurs
+     */
+    public void creerEvenement(Organisateur org, String titre, String description,
+                               LocalDateTime date, String lieu, int nbPlaces, BigDecimal prixBase) {
         Evenement ev = new Evenement(
-                eventIdGen.getAndIncrement(),
+                1L, // ID généré par la BDD
                 titre,
                 description,
                 date,
@@ -191,7 +118,12 @@ public class TicketService {
                 prixBase,
                 org
         );
-        evenements.add(ev);
-        return ev;
+        evenementDao.save(ev);
+    }
+
+    public List<Evenement> listerEvenementsOrganisateur(Organisateur org) {
+        return evenementDao.findAll().stream()
+                .filter(e -> e.getOrganisateur().getId().equals(org.getId()))
+                .toList();
     }
 }

@@ -1,6 +1,6 @@
 package org.example.codingtickets.model;
 
-public abstract class Utilisateur {
+public class Utilisateur {
     private Long id;
     private String nom;
     private String email;
@@ -14,6 +14,11 @@ public abstract class Utilisateur {
         this.motDePasse = motDePasse;
         this.role = role;
     }
+
+    public Utilisateur() {
+
+    }
+
 
     // Getters / setters
     public Long getId() { return id; }
