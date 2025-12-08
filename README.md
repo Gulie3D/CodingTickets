@@ -1,4 +1,4 @@
-# CodingTickets App
+# CodingTickets App partie 2
 **CodingTickets** est une application web Java JEE permettant la gestion d'événements. Elle offre une plateforme à deux facettes :
 * **Côté Client :** Consultation, réservation et annulation de places pour des événements.
 * **Côté Organisateur :** Création et gestion complète d'événements (date, lieu, prix, capacité).
