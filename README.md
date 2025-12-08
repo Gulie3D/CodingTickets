@@ -1,14 +1,34 @@
-# CodingTickets App
+# CodingTickets App partie 1
 CodingTickets est une application à un client de pouvoir réserver un événement ou l'annuler, et de permettre à un organisateur de créer un événement avec la date et le prix et le nombre de places.
 
 ## Installation et Configuration
-Sur IntelliJ, lancer le mvn clean package, récupérer le fichier war apparaissant dans le target et le mettre dans le webapp de Tomcat en le renommant CodingTickets.war.
-Dans le run configuration faire edit configuration et choisir Tomcat, indiquer dans l'URL http://localhost:8080/CodingTickets/login et dans le deployement faire le + et choisir CodingTickets:war exploded, et indiquer plus bas sur la même page dans application context /CodingTickets. 
+### Via IDE (IntelliJ ou Eclipse)
+#### Configuration sur IntelliJ IDEA
+1.  Ouvrez l'onglet **Maven** (à droite) > `Lifecycle`.
+2.  Exécutez `clean` puis `package`.
+3.  Vérifiez qu'un fichier `.war` a été créé dans le dossier `target`.
+4.  Allez dans **Run > Edit Configurations**.
+5.  Cliquez sur **+** et sélectionnez **Tomcat Server > Local**.
+6.  Dans l'onglet **Deployment** :
+    * Cliquez sur **+** > **Artifact**.
+    * Sélectionnez `CodingTickets:war exploded`.
+    * Dans **Application context**, mettez : `/CodingTickets`.
+7.  Dans l'onglet **Server** :
+    * URL : `http://localhost:8080/CodingTickets/login`
+8.  Lancez le serveur (bouton Play vert).
+
+#### Configuration sur Eclipse
+1.  Faites **File > Import > Existing Maven Projects**.
+2.  Clic droit sur le projet > **Run As > Maven build...** > Goals: `clean package`.
+3.  Installez un serveur Tomcat 10/11 dans l'onglet **Servers**.
+4.  Clic droit sur le serveur > **Add and Remove...** > Ajoutez `CodingTickets`.
+5.  Démarrez le serveur et accédez à `http://localhost:8080/CodingTickets/login`.
+
 
 ## Technologies
 - Tomcat 11.0.14
 - Java 17
-- IntelliJ
+- IntelliJ ou Eclipse
 
 ## Auteurs
 Equipe développeurs back-end : 
@@ -48,3 +68,37 @@ dateEvenement >= (maintenant + 1 jour).
 - R3.2 : Lors d’une annulation acceptée :
 le statut de la réservation passe à ANNULEE,
 nbPlacesRestantes de l’événement augmente du nombre de places annulées.
+
+## Modélisation et Conception
+L'architecture de l'application repose sur une conception stricte séparant les données, les traitements et l'affichage.
+### Du Diagramme de Classes vers la Couche Modèle (Java)
+À partir du diagramme de classes UML, nous avons implémenté la couche **Model** (POJO) :
+* **Encapsulation :** Toutes les entités (`Evenement`, `Reservation`) possèdent des attributs privés accessibles via des Getters/Setters.
+* **Héritage :** La gestion des utilisateurs utilise l'héritage. 
+* La classe mère `Utilisateur` est étendue par `Client` et `Organisateur`, 
+* permettant de partager les attributs communs (nom, email, mot de passe) 
+* tout en spécialisant les rôles via une Enum ou un discriminant.
+## URLs Principales
+
+L'application est accessible via les adresses suivantes (sur le port **8080** via IntelliJ/Eclipse) :
+
+| Page | URL                                                        | Accès |
+| :--- |:-----------------------------------------------------------| :--- |
+| **Connexion** | `http://localhost:8080/CodingTickets/login`                | Public |
+| **Liste des Événements** | `http://localhost:8080/CodingTickets/events`               | Public |
+| **Mes Réservations** | `http://localhost:8080/CodingTickets/reservations/history` | Client uniquement |
+| **Mes Événements** | `http://localhost:8080/CodingTickets/events/my`            | Organisateur uniquement |
+| **Créer un Événement** | `http://localhost:8080/CodingTickets/events/create`        | Organisateur uniquement |
+| **Déconnexion** | `http://localhost:8080/CodingTickets/logout`               | Tous |
+
+
+## 🔐 Comptes de Test
+
+Voici les identifiants pré-configurés pour tester l'application :
+
+| Rôle | Email                 | Mot de passe |
+| :--- |:----------------------|:-------------|
+| **Organisateur** | `prof.java@coding.fr` | `java123`    |
+| **Organisateur** | `prof.web@coding.fr`  | `web123`     |
+| **Client** | `alice@coding.fr`     | `alice123`   |
+| **Client** | `bob@coding.fr`       | `bob123`     |
