@@ -30,7 +30,12 @@ public class Evenement {
         this.prixBase = prixBase;
         this.organisateur = organisateur;
     }
-
+    
+    /**
+     * Constructeur par défaut.
+     */
+    public Evenement() {
+    }
 
     /**
      * Réserve un certain nombre de places.
@@ -58,8 +63,8 @@ public class Evenement {
         }
     }
 
-    // Getters / setters classiques…
-
+    // ==================== GETTERS ====================
+    
     public Long getId() { return id; }
     public String getTitre() { return titre; }
     public String getDescription() { return description; }
@@ -70,9 +75,15 @@ public class Evenement {
     public BigDecimal getPrixBase() { return prixBase; }
     public Organisateur getOrganisateur() { return organisateur; }
 
+    // ==================== SETTERS ====================
+    
     public void setId(Long id) { this.id = id; }
-
-    public void setNbPlacesRestantes(int nbPlacesRestantes) {
-        this.nbPlacesRestantes = nbPlacesRestantes;
-    }
+    public void setTitre(String titre) { this.titre = titre; }
+    public void setDescription(String description) { this.description = description; }
+    public void setDateEvenement(LocalDateTime dateEvenement) { this.dateEvenement = dateEvenement; }
+    public void setLieu(String lieu) { this.lieu = lieu; }
+    public void setNbPlacesTotales(int nbPlacesTotales) { this.nbPlacesTotales = nbPlacesTotales; }
+    public void setNbPlacesRestantes(int nbPlacesRestantes) { this.nbPlacesRestantes = nbPlacesRestantes; }
+    public void setPrixBase(BigDecimal prixBase) { this.prixBase = prixBase; }
+    public void setOrganisateur(Organisateur organisateur) { this.organisateur = organisateur; }
 }

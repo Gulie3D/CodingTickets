@@ -25,7 +25,17 @@ public class Reservation {
         this.client = client;
         this.evenement = evenement;
     }
+    
+    /**
+     * Constructeur par défaut.
+     */
+    public Reservation() {
+    }
 
+    /**
+     * Annule la réservation si l'événement n'est pas trop proche.
+     * @param maintenant L'instant actuel pour la vérification
+     */
     public void annuler(LocalDateTime maintenant) {
         if (statut == StatutReservation.ANNULEE) {
             return;
@@ -33,24 +43,31 @@ public class Reservation {
 
         LocalDateTime limite = maintenant.plusDays(1);
         if (evenement.getDateEvenement().isBefore(limite)) {
-            throw new AnnulationTardiveException("Annulation impossible : l'événement est trop proche (moins de 24h).");
+            throw new AnnulationTardiveException(
+                "Annulation impossible : l'événement est trop proche (moins de 24h)."
+            );
         }
 
         this.statut = StatutReservation.ANNULEE;
     }
 
-    // Getter / setter
+    // ==================== GETTERS ====================
+    
     public Long getId() { return id; }
-    public StatutReservation getStatut() { return statut; }
-    public Integer getNbPlaces() { return nbPlaces; }
+    public LocalDateTime getDateReservation() { return dateReservation; }
+    public int getNbPlaces() { return nbPlaces; }
     public BigDecimal getMontantTotal() { return montantTotal; }
+    public StatutReservation getStatut() { return statut; }
     public Client getClient() { return client; }
     public Evenement getEvenement() { return evenement; }
 
-    public Long setId(Long id) { return this.id = id;}
-
-    public LocalDateTime getDateReservation() {
-
-        return dateReservation;
-    }
+    // ==================== SETTERS ====================
+    
+    public void setId(Long id) { this.id = id; }
+    public void setDateReservation(LocalDateTime dateReservation) { this.dateReservation = dateReservation; }
+    public void setNbPlaces(int nbPlaces) { this.nbPlaces = nbPlaces; }
+    public void setMontantTotal(BigDecimal montantTotal) { this.montantTotal = montantTotal; }
+    public void setStatut(StatutReservation statut) { this.statut = statut; }
+    public void setClient(Client client) { this.client = client; }
+    public void setEvenement(Evenement evenement) { this.evenement = evenement; }
 }

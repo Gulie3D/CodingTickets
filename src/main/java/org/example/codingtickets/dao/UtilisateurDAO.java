@@ -1,5 +1,6 @@
 package org.example.codingtickets.dao;
 
+import org.example.codingtickets.model.Client;
 import org.example.codingtickets.model.Utilisateur;
 
 import java.util.List;
@@ -19,4 +20,9 @@ public interface UtilisateurDAO {
 
     Utilisateur findByEmailAndPassword(String email, String password);
 
+    /**
+     * Récupère tous les utilisateurs ayant le rôle CLIENT.
+     * @return Liste des clients
+     */
+    List<Client> findAllClients();
 }

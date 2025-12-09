@@ -138,5 +138,8 @@ Voici les identifiants pré-configurés pour tester l'application :
 | Rôle | Email | Mot de passe |
 | :--- | :--- | :--- |
 | **Organisateur** | `bob_organisateur@coding.fr` | `bob123` |
+| **Organisateur** | `marie_organisatrice@coding.fr` | `marie123` |
 | **Client** | `alice_cliente@coding.fr` | `alice123` |
+| **Client** | `charlie_client@coding.fr` | `charlie123` |
+| **Client** | `diana_cliente@coding.fr` | `diana123` |
 

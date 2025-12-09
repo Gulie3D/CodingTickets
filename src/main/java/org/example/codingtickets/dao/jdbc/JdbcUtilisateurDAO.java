@@ -55,6 +55,29 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
     }
 
     @Override
+    public List<Client> findAllClients() {
+        List<Client> clients = new ArrayList<>();
+        String sql = "SELECT * FROM utilisateur WHERE role = 'CLIENT'";
+
+        try (Connection conn = ConnectionManager.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Long id = rs.getLong("id_utilisateur");
+                String nom = rs.getString("nom");
+                String email = rs.getString("email");
+                String mdp = rs.getString("motdepasse");
+                clients.add(new Client(id, nom, email, mdp));
+            }
+
+        } catch (SQLException e) {
+            throw new DaoException("Erreur lors de la récupération de la liste des clients", e);
+        }
+        return clients;
+    }
+
+    @Override
     public Optional<Utilisateur> findById(Long id) {
         try {
             return Optional.ofNullable(findById((long) id));
