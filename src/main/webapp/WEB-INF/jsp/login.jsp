@@ -44,14 +44,20 @@
         
         <div class="demo-accounts">
             <div class="demo-account">
-                <span class="demo-label">Organisateur</span>
+                <span class="demo-label">Organisateurs</span>
                 <span class="demo-email">bob_organisateur@coding.fr</span>
                 <span class="demo-pass">bob123</span>
+                <span class="demo-email">marie_organisatrice@coding.fr</span>
+                <span class="demo-pass">marie123</span>
             </div>
             <div class="demo-account">
-                <span class="demo-label">Client</span>
+                <span class="demo-label">Clients</span>
                 <span class="demo-email">alice_cliente@coding.fr</span>
                 <span class="demo-pass">alice123</span>
+                <span class="demo-email">charlie_client@coding.fr</span>
+                <span class="demo-pass">charlie123</span>
+                <span class="demo-email">diana_cliente@coding.fr</span>
+                <span class="demo-pass">diana123</span>
             </div>
         </div>
     </div>
