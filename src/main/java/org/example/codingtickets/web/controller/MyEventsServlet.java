@@ -22,19 +22,16 @@ public class MyEventsServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // 1. Vérifier que c'est un organisateur
         Utilisateur user = (Utilisateur) req.getSession().getAttribute("user");
-        
+
         if (!(user instanceof Organisateur)) {
             resp.sendRedirect(req.getContextPath() + "/events");
             return;
         }
 
-        // 2. Récupérer ses événements
         TicketService service = (TicketService) getServletContext().getAttribute("ticketService");
         List<Evenement> mesEvenements = service.listerEvenementsOrganisateur((Organisateur) user);
 
-        // 3. Afficher la page
         resp.setContentType("text/html;charset=UTF-8");
         PrintWriter out = resp.getWriter();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -47,14 +44,12 @@ public class MyEventsServlet extends HttpServlet {
         out.println(" | <a href='" + req.getContextPath() + "/logout'>Déconnexion</a>");
         out.println("<hr/>");
 
-        // Message de succès si présent (stocké en session)
         String success = (String) req.getSession().getAttribute("success");
         if (success != null) {
             out.println("<p style='color:green; border:1px solid green; padding:10px;'>" + success + "</p>");
-            req.getSession().removeAttribute("success"); // Supprimer après affichage
+            req.getSession().removeAttribute("success");
         }
 
-        // 4. Afficher le tableau des événements
         if (mesEvenements.isEmpty()) {
             out.println("<p>Vous n'avez créé aucun événement.</p>");
             out.println("<p><a href='" + req.getContextPath() + "/events/create'>Créer mon premier événement</a></p>");
@@ -67,6 +62,7 @@ public class MyEventsServlet extends HttpServlet {
             out.println("<th>Lieu</th>");
             out.println("<th>Places</th>");
             out.println("<th>Prix</th>");
+            out.println("<th>Actions</th>");
             out.println("</tr>");
 
             for (Evenement ev : mesEvenements) {
@@ -86,6 +82,15 @@ public class MyEventsServlet extends HttpServlet {
                 out.println("<td>" + placesInfo + "</td>");
 
                 out.println("<td>" + ev.getPrixBase() + " €</td>");
+
+                out.println("<td>");
+                out.println("<a href='" + req.getContextPath() + "/events/edit?id=" + ev.getId() + "'>[Modifier]</a> ");
+                out.println("<form action='" + req.getContextPath() + "/events/delete' method='post' style='display:inline;' onsubmit='return confirm(\"Voulez-vous vraiment supprimer cet événement ?\");'>");
+                out.println("<input type='hidden' name='id' value='" + ev.getId() + "'/>");
+                out.println("<button type='submit' style='color:red; cursor:pointer;'>X</button>");
+                out.println("</form>");
+
+                out.println("</td>");
                 out.println("</tr>");
             }
             out.println("</table>");

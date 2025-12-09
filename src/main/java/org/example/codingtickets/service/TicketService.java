@@ -208,6 +208,61 @@ public class TicketService {
     }
 
     /**
+     * Modification d'un événement par son organisateur
+     */
+    public void modifierEvenement(Organisateur org, long idEvenement, String titre, String description,
+                                  LocalDateTime date, String lieu, int nbPlaces, BigDecimal prixBase) {
+        Evenement ev = trouverEvenementParId(idEvenement);
+
+        if (ev == null) {
+            throw new IllegalArgumentException("Événement introuvable");
+        }
+
+        if (!ev.getOrganisateur().getId().equals(org.getId())) {
+            throw new IllegalArgumentException("Vous n'êtes pas autorisé à modifier cet événement");
+        }
+
+        int placesReservees = ev.getNbPlacesTotales() - ev.getNbPlacesRestantes();
+
+        if (nbPlaces < placesReservees) {
+            throw new IllegalArgumentException(
+                    "Impossible de réduire à " + nbPlaces + " places : " + placesReservees + " places déjà réservées"
+            );
+        }
+
+        ev.setTitre(titre);
+        ev.setDescription(description);
+        ev.setDateEvenement(date);
+        ev.setLieu(lieu);
+        ev.setNbPlacesTotales(nbPlaces);
+        ev.setNbPlacesRestantes(nbPlaces - placesReservees);
+        ev.setPrixBase(prixBase);
+
+    }
+
+    /**
+     * Suppression d'un événement par son organisateur
+     */
+    public void supprimerEvenement(Organisateur org, long idEvenement) {
+        Evenement ev = trouverEvenementParId(idEvenement);
+
+        if (ev == null) {
+            throw new IllegalArgumentException("Événement introuvable");
+        }
+
+        if (!ev.getOrganisateur().getId().equals(org.getId())) {
+            throw new IllegalArgumentException("Vous n'êtes pas autorisé à supprimer cet événement");
+        }
+
+        int placesReservees = ev.getNbPlacesTotales() - ev.getNbPlacesRestantes();
+        if (placesReservees > 0) {
+            throw new IllegalArgumentException(
+                    "Impossible de supprimer : " + placesReservees + " places sont déjà réservées"
+            );
+        }
+        evenements.remove(ev);
+    }
+    /**
      * Liste les événements créés par un organisateur spécifique.
      * @param org L'organisateur connecté
      * @return La liste de ses événements
