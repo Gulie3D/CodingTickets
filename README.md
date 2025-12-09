@@ -92,13 +92,14 @@ L'application est accessible via les adresses suivantes (sur le port **8080** vi
 | **Déconnexion** | `http://localhost:8080/CodingTickets/logout`               | Tous |
 
 
-## 🔐 Comptes de Test
+## Comptes de Test
 
 Voici les identifiants pré-configurés pour tester l'application :
 
-| Rôle | Email                 | Mot de passe |
-| :--- |:----------------------|:-------------|
-| **Organisateur** | `prof.java@coding.fr` | `java123`    |
-| **Organisateur** | `prof.web@coding.fr`  | `web123`     |
-| **Client** | `alice@coding.fr`     | `alice123`   |
-| **Client** | `bob@coding.fr`       | `bob123`     |
+| Rôle | Email | Mot de passe |
+| :--- | :--- | :--- |
+| **Organisateur** | `bob_organisateur@coding.fr` | `bob123` |
+| **Organisateur** | `marie_organisatrice@coding.fr` | `marie123` |
+| **Client** | `alice_cliente@coding.fr` | `alice123` |
+| **Client** | `charlie_client@coding.fr` | `charlie123` |
+| **Client** | `diana_cliente@coding.fr` | `diana123` |
