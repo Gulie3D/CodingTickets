@@ -46,10 +46,6 @@ public class TicketService {
 
     /**
      * Effectue une réservation
-     * 1. Récupère l'événement
-     * 2. Vérifie et décrémente les places (Logique métier)
-     * 3. Met à jour l'événement en base
-     * 4. Sauvegarde la réservation en base
      */
     public void reserver(Client client, long idEvenement, int nbPlaces) {
         Evenement evenement = evenementDao.findById(idEvenement);
@@ -64,7 +60,7 @@ public class TicketService {
         BigDecimal montantTotal = evenement.getPrixBase().multiply(BigDecimal.valueOf(nbPlaces));
 
         Reservation reservation = new Reservation(
-                0L, // ID temporaire, ignoré par le save
+                0L,
                 LocalDateTime.now(),
                 nbPlaces,
                 montantTotal,
@@ -101,14 +97,13 @@ public class TicketService {
         evenementDao.update(evt);
     }
 
-
     /**
      * Création d'événement pour les organisateurs
      */
     public void creerEvenement(Organisateur org, String titre, String description,
                                LocalDateTime date, String lieu, int nbPlaces, BigDecimal prixBase) {
         Evenement ev = new Evenement(
-                1L, // ID généré par la BDD
+                null,
                 titre,
                 description,
                 date,
@@ -121,6 +116,73 @@ public class TicketService {
         evenementDao.save(ev);
     }
 
+    /**
+     * Modification d'un événement par son organisateur
+     */
+    public void modifierEvenement(Organisateur org, long idEvenement, String titre, String description,
+                                  LocalDateTime date, String lieu, int nbPlaces, BigDecimal prixBase) {
+        Evenement ev = evenementDao.findById(idEvenement);
+        
+        if (ev == null) {
+            throw new IllegalArgumentException("Événement introuvable");
+        }
+        
+        // Vérifier que l'organisateur est bien le propriétaire
+        if (!ev.getOrganisateur().getId().equals(org.getId())) {
+            throw new IllegalArgumentException("Vous n'êtes pas autorisé à modifier cet événement");
+        }
+        
+        // Calculer les places déjà réservées
+        int placesReservees = ev.getNbPlacesTotales() - ev.getNbPlacesRestantes();
+        
+        // Vérifier que le nouveau nombre de places est suffisant
+        if (nbPlaces < placesReservees) {
+            throw new IllegalArgumentException(
+                "Impossible de réduire à " + nbPlaces + " places : " + placesReservees + " places déjà réservées"
+            );
+        }
+        
+        // Mettre à jour l'événement
+        ev.setTitre(titre);
+        ev.setDescription(description);
+        ev.setDateEvenement(date);
+        ev.setLieu(lieu);
+        ev.setNbPlacesTotales(nbPlaces);
+        ev.setNbPlacesRestantes(nbPlaces - placesReservees);
+        ev.setPrixBase(prixBase);
+        
+        evenementDao.update(ev);
+    }
+
+    /**
+     * Suppression d'un événement par son organisateur
+     */
+    public void supprimerEvenement(Organisateur org, long idEvenement) {
+        Evenement ev = evenementDao.findById(idEvenement);
+        
+        if (ev == null) {
+            throw new IllegalArgumentException("Événement introuvable");
+        }
+        
+        // Vérifier que l'organisateur est bien le propriétaire
+        if (!ev.getOrganisateur().getId().equals(org.getId())) {
+            throw new IllegalArgumentException("Vous n'êtes pas autorisé à supprimer cet événement");
+        }
+        
+        // Vérifier qu'il n'y a pas de réservations actives
+        int placesReservees = ev.getNbPlacesTotales() - ev.getNbPlacesRestantes();
+        if (placesReservees > 0) {
+            throw new IllegalArgumentException(
+                "Impossible de supprimer : " + placesReservees + " places sont déjà réservées"
+            );
+        }
+        
+        evenementDao.delete(idEvenement);
+    }
+
+    /**
+     * Liste les événements d'un organisateur
+     */
     public List<Evenement> listerEvenementsOrganisateur(Organisateur org) {
         return evenementDao.findAll().stream()
                 .filter(e -> e.getOrganisateur().getId().equals(org.getId()))

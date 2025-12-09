@@ -1,0 +1,28 @@
+/* =============================================
+   CodingTickets - Formulaire Événement
+   ============================================= */
+
+.event-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.event-form-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 2rem;
+}
+
+.event-form-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 0.25rem;
+}
+
+.event-form-subtitle {
+    color: var(--gray-500);
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+}

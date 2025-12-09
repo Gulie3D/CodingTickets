@@ -1,0 +1,14 @@
+/* =============================================
+   CodingTickets - Mes Réservations
+   ============================================= */
+
+/* Styles spécifiques aux réservations */
+.reservations-table .event-name {
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.reservations-table .event-lieu {
+    font-size: 0.8125rem;
+    color: var(--gray-500);
+}
