@@ -69,9 +69,14 @@
                 </form>
 
                 <div class="text-center mt-4 text-muted">
-                    <small>Compte Organisateur Test : bob_organisateur@coding.fr / bob123</small>
-                    <br>
-                    <small>Compte Client Test : alice_cliente@coding.fr / alice123</small>
+                    <small><strong>Comptes Organisateurs :</strong></small><br>
+                    <small>bob_organisateur@coding.fr / bob123</small><br>
+                    <small>marie_organisatrice@coding.fr / marie123</small>
+                    <br><br>
+                    <small><strong>Comptes Clients :</strong></small><br>
+                    <small>alice_cliente@coding.fr / alice123</small><br>
+                    <small>charlie_client@coding.fr / charlie123</small><br>
+                    <small>diana_cliente@coding.fr / diana123</small>
                 </div>
             </div>
         </div>

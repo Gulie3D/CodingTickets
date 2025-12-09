@@ -97,7 +97,7 @@ public class TicketService {
         reservationDao.update(r);
 
         Evenement evt = r.getEvenement();
-        evt.setNbPlacesRestantes(evt.getNbPlacesRestantes() + r.getNbPlaces());
+        evt.annulerPlaces(r.getNbPlaces());
         evenementDao.update(evt);
     }
 
