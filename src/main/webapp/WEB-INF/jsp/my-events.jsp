@@ -1,86 +1,116 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
-<%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <title>Mes événements organisés</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Événements - CodingTickets</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/my-events.css">
 </head>
-<body class="bg-light">
+<body>
 
-<nav class="navbar navbar-dark bg-dark mb-4">
+<nav class="navbar">
     <div class="container">
-        <span class="navbar-brand">Espace Organisateur</span>
-        <div class="d-flex gap-2">
-            <a href="${pageContext.request.contextPath}/events/create" class="btn btn-success btn-sm">+ Créer</a>
-            <a href="${pageContext.request.contextPath}/events" class="btn btn-outline-light btn-sm">Voir tout</a>
+        <a class="navbar-brand" href="${pageContext.request.contextPath}/events">CodingTickets</a>
+        <div class="navbar-actions">
+            <span class="user-info">${sessionScope.user.nom} (${sessionScope.user.role})</span>
+            <a href="${pageContext.request.contextPath}/events/create" class="btn btn-primary btn-sm">+ Créer</a>
+            <a href="${pageContext.request.contextPath}/events" class="btn btn-outline-primary btn-sm">Événements</a>
+            <a href="${pageContext.request.contextPath}/logout" class="btn btn-secondary btn-sm">Déconnexion</a>
         </div>
     </div>
 </nav>
 
-<div class="container">
+<div class="page-container">
+    <div class="mb-4">
+        <h1 class="page-title">Mes événements</h1>
+        <p class="page-subtitle">Gérez les événements que vous avez créés</p>
+    </div>
 
     <c:if test="${not empty param.success}">
-        <div class="alert alert-success">Action effectuée avec succès !</div>
+        <div class="alert alert-success">${param.success}</div>
+    </c:if>
+    <c:if test="${not empty param.error}">
+        <div class="alert alert-danger">${param.error}</div>
+    </c:if>
+    <c:if test="${not empty sessionScope.error}">
+        <div class="alert alert-danger">${sessionScope.error}</div>
+        <c:remove var="error" scope="session"/>
     </c:if>
 
-    <div class="card shadow">
-        <div class="card-header bg-white">
-            <h4 class="mb-0">Mes événements publiés</h4>
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0 align-middle">
-                <thead class="table-light">
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
                 <tr>
+                    <th>Événement</th>
                     <th>Date</th>
-                    <th>Titre</th>
                     <th>Lieu</th>
-                    <th>Remplissage</th>
-                    <th>Recette estimée</th>
+                    <th>Places</th>
+                    <th>Recette</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
-
-                <%-- Début de la boucle --%>
                 <c:forEach items="${myEvents}" var="ev">
+                    <c:set var="reservees" value="${ev.nbPlacesTotales - ev.nbPlacesRestantes}" />
                     <tr>
-                        <td>${ev.dateEvenement}</td>
                         <td>
-                            <strong>${ev.titre}</strong><br>
-                            <small class="text-muted">${ev.description}</small>
+                            <strong>${ev.titre}</strong>
+                            <div class="text-muted text-small">${ev.description}</div>
                         </td>
-                        <td>${ev.lieu}</td>
                         <td>
-                            <c:set var="reservees" value="${ev.nbPlacesTotales - ev.nbPlacesRestantes}" />
-
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar ${ev.nbPlacesRestantes == 0 ? 'bg-danger' : 'bg-success'}"
-                                     role="progressbar"
-                                     style="width: ${(reservees / ev.nbPlacesTotales) * 100}%">
-                                        ${reservees}/${ev.nbPlacesTotales}
+                            <span class="text-small">${ev.dateFormatee}</span>
+                        </td>
+                        <td class="text-small">${ev.lieu}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress" style="width: 50px;">
+                                    <div class="progress-bar ${ev.nbPlacesRestantes == 0 ? 'bg-danger' : 'bg-success'}"
+                                         style="width: ${(reservees / ev.nbPlacesTotales) * 100}%">
+                                    </div>
                                 </div>
+                                <span class="text-small">${reservees}/${ev.nbPlacesTotales}</span>
                             </div>
-                            <small class="text-muted" style="font-size: 0.85em">
-                                Reste : ${ev.nbPlacesRestantes} places
-                            </small>
                         </td>
                         <td>
-                            <span class="badge bg-primary fs-6">
-                                ${(ev.nbPlacesTotales - ev.nbPlacesRestantes) * ev.prixBase} €
-                            </span>
-                            <div class="text-muted" style="font-size: 0.8em">Prix: ${ev.prixBase} €</div>
+                            <strong class="text-success">${reservees * ev.prixBase}€</strong>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex gap-1 justify-content-end">
+                                <a href="${pageContext.request.contextPath}/events/edit?id=${ev.id}" 
+                                   class="btn btn-outline-primary btn-sm">Modifier</a>
+                                   
+                                <c:choose>
+                                    <c:when test="${reservees == 0}">
+                                        <form action="${pageContext.request.contextPath}/events/delete" method="post" style="display: inline;"
+                                              onsubmit="return confirm('Supprimer cet événement ?');">
+                                            <input type="hidden" name="eventId" value="${ev.id}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">Supprimer</button>
+                                        </form>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <button type="button" class="btn btn-secondary btn-sm" disabled 
+                                                title="Impossible : ${reservees} place(s) réservée(s)">Supprimer</button>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
                         </td>
                     </tr>
                 </c:forEach>
-                <%-- Fin de la boucle (C'est cette balise qui manquait peut-être) --%>
 
-                <%--@elvariable id="myEvents" type=""--%>
                 <c:if test="${empty myEvents}">
                     <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
-                            Vous n'avez créé aucun événement pour l'instant.
+                        <td colspan="6" class="empty-state">
+                            <h5>Aucun événement créé</h5>
+                            <p>Créez votre premier événement.</p>
+                            <a href="${pageContext.request.contextPath}/events/create" class="btn btn-primary">
+                                + Créer un événement
+                            </a>
                         </td>
                     </tr>
                 </c:if>

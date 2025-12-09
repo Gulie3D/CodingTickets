@@ -4,80 +4,108 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Événements - CodingTickets</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/events.css">
 </head>
-<body class="bg-light">
+<body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<nav class="navbar">
     <div class="container">
-        <a class="navbar-brand" href="#">CodingTickets</a>
-        <div class="d-flex text-white align-items-center gap-3">
-            <c:if test="${empty sessionScope.user}">
-                <a href="${pageContext.request.contextPath}/login" class="btn btn-outline-light btn-sm">Se connecter</a>
-            </c:if>
+        <a class="navbar-brand" href="${pageContext.request.contextPath}/events">CodingTickets</a>
+        
+        <div class="navbar-actions">
             <c:if test="${not empty sessionScope.user}">
-                <span>Bonjour, ${sessionScope.user.nom}</span>
-
-                <%-- CORRECTION ICI : On utilise le RÔLE (Enum) au lieu de la CLASSE --%>
+                <span class="user-info">${sessionScope.user.nom} (${sessionScope.user.role})</span>
+                
                 <c:if test="${sessionScope.user.role == 'CLIENT'}">
-                    <a href="${pageContext.request.contextPath}/reservations/history" class="btn btn-primary btn-sm">Mes Réservations</a>
+                    <a href="${pageContext.request.contextPath}/reservations/history" class="btn btn-outline-primary btn-sm">
+                        Mes réservations
+                    </a>
                 </c:if>
-
+                
                 <c:if test="${sessionScope.user.role == 'ORGANISATEUR'}">
-                    <a href="${pageContext.request.contextPath}/events/my" class="btn btn-warning btn-sm">Mes Événements</a>
-                    <a href="${pageContext.request.contextPath}/events/create" class="btn btn-success btn-sm">+ Créer</a>
+                    <a href="${pageContext.request.contextPath}/events/my" class="btn btn-outline-primary btn-sm">
+                        Mes événements
+                    </a>
                 </c:if>
-
-                <a href="${pageContext.request.contextPath}/logout" class="btn btn-danger btn-sm">Déconnexion</a>
+                
+                <a href="${pageContext.request.contextPath}/logout" class="btn btn-secondary btn-sm">Déconnexion</a>
+            </c:if>
+            
+            <c:if test="${empty sessionScope.user}">
+                <a href="${pageContext.request.contextPath}/login" class="btn btn-primary btn-sm">Connexion</a>
             </c:if>
         </div>
     </div>
 </nav>
 
-<div class="container">
-    <h2 class="mb-4 text-center">Tous les événements</h2>
+<div class="page-container">
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title">Événements disponibles</h1>
+                <p class="page-subtitle">Découvrez et réservez vos places</p>
+            </div>
+            <c:if test="${sessionScope.user.role == 'ORGANISATEUR'}">
+                <a href="${pageContext.request.contextPath}/events/create" class="btn btn-primary">
+                    + Créer un événement
+                </a>
+            </c:if>
+        </div>
+    </div>
 
-    <%--@elvariable id="errorMessage" type=""--%>
     <c:if test="${not empty errorMessage}">
         <div class="alert alert-danger">${errorMessage}</div>
     </c:if>
+    <c:if test="${not empty param.error}">
+        <div class="alert alert-danger">${param.error}</div>
+    </c:if>
 
-    <div class="row">
-        <%--@elvariable id="events" type="java.util.List"--%>
+    <div class="row g-4">
         <c:forEach items="${events}" var="event">
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <h5 class="card-title fw-bold">${event.titre}</h5>
-                            <span class="badge bg-success">${event.prixBase} €</span>
+            <div class="col-md-6 col-lg-4">
+                <div class="card event-card">
+                    <div class="card-body">
+                        <div class="event-header">
+                            <h5 class="event-title">${event.titre}</h5>
+                            <span class="event-price">${event.prixBase}€</span>
                         </div>
-                        <p class="text-muted small mb-2"><i class="bi bi-geo-alt"></i> ${event.lieu} | ${event.dateEvenement}</p>
-                        <p class="card-text text-secondary flex-grow-1">${event.description}</p>
-                        <hr>
-
-                        <div class="d-flex justify-content-between align-items-center">
+                        
+                        <div class="event-info">
+                            <div class="event-info-item">${event.lieu}</div>
+                            <div class="event-info-item">${event.dateFormatee}</div>
+                        </div>
+                        
+                        <p class="event-description">${event.description}</p>
+                        
+                        <div class="event-footer">
                             <c:choose>
                                 <c:when test="${event.nbPlacesRestantes == 0}">
-                                    <span class="badge bg-danger">COMPLET</span>
+                                    <span class="event-status full">Complet</span>
                                 </c:when>
                                 <c:otherwise>
-                                    <small>Restantes : <b>${event.nbPlacesRestantes}</b> / ${event.nbPlacesTotales}</small>
+                                    <div class="event-places">
+                                        <span class="places-count">${event.nbPlacesRestantes}</span>
+                                        <span class="places-label">places restantes</span>
+                                    </div>
                                 </c:otherwise>
                             </c:choose>
-
-                                <%-- CORRECTION ICI AUSSI : Vérification du RÔLE CLIENT --%>
+                            
                             <c:if test="${event.nbPlacesRestantes > 0 && sessionScope.user.role == 'CLIENT'}">
-                                <form action="${pageContext.request.contextPath}/reservations/create" method="post" class="d-flex gap-2">
+                                <form action="${pageContext.request.contextPath}/reservations/create" method="post" class="reserve-form">
                                     <input type="hidden" name="eventId" value="${event.id}">
-                                    <input type="number" name="nbPlaces" value="1" min="1" max="${event.nbPlacesRestantes}" class="form-control form-control-sm" style="width: 60px;">
+                                    <input type="number" name="nbPlaces" value="1" min="1" max="${event.nbPlacesRestantes}" 
+                                           class="form-control places-input">
                                     <button type="submit" class="btn btn-primary btn-sm">Réserver</button>
                                 </form>
                             </c:if>
-
+                            
                             <c:if test="${empty sessionScope.user}">
-                                <small class="text-muted fst-italic">Connectez-vous pour réserver</small>
+                                <a href="${pageContext.request.contextPath}/login" class="btn btn-outline-primary btn-sm w-100">Connexion</a>
                             </c:if>
                         </div>
                     </div>
@@ -85,6 +113,14 @@
             </div>
         </c:forEach>
     </div>
+    
+    <c:if test="${empty events}">
+        <div class="empty-state">
+            <h5>Aucun événement disponible</h5>
+            <p>Revenez plus tard pour découvrir de nouveaux événements.</p>
+        </div>
+    </c:if>
 </div>
+
 </body>
 </html>

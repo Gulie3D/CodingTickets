@@ -4,6 +4,8 @@ import org.example.codingtickets.exception.PlacesInsuffisantesException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 public class Evenement {
     private Long id;
@@ -15,6 +17,8 @@ public class Evenement {
     private int nbPlacesRestantes;
     private BigDecimal prixBase;
     private Organisateur organisateur;
+    private static final DateTimeFormatter FORMATTER = 
+        DateTimeFormatter.ofPattern("d MMM yyyy 'à' HH:mm", Locale.FRENCH);
 
     public Evenement(Long id, String titre, String description,
                      LocalDateTime dateEvenement, String lieu,
@@ -31,15 +35,11 @@ public class Evenement {
         this.organisateur = organisateur;
     }
     
-    /**
-     * Constructeur par défaut.
-     */
     public Evenement() {
     }
 
     /**
      * Réserve un certain nombre de places.
-     * Met à jour nbPlacesRestantes ou lève une exception.
      */
     public void reserverPlaces(int nb) {
         if (nb <= 0) {
@@ -54,13 +54,22 @@ public class Evenement {
     }
 
     /**
-     * Annule un certain nombre de places : remet les places dans le stock.
+     * Annule un certain nombre de places.
      */
     public void annulerPlaces(int nb) {
         nbPlacesRestantes += nb;
         if (nbPlacesRestantes > nbPlacesTotales) {
             nbPlacesRestantes = nbPlacesTotales;
         }
+    }
+    
+    /**
+     * Retourne la date formatée de manière lisible.
+     * Ex: "12 déc. 2025 à 14:30"
+     */
+    public String getDateFormatee() {
+        if (dateEvenement == null) return "";
+        return dateEvenement.format(FORMATTER);
     }
 
     // ==================== GETTERS ====================

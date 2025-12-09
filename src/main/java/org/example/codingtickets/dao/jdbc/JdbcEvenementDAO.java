@@ -62,10 +62,10 @@ public class JdbcEvenementDAO implements EvenementDAO {
     @Override
     public void save(Evenement e) {
         String sql = """
-            INSERT INTO evenement(titre, description, dateevenement, lieu,\s
+            INSERT INTO evenement(titre, description, dateevenement, lieu,
                                   nbreplacetotale, nbreplacesrestantes, prix_base, id_organisateur)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-           \s""";
+            """;
 
         try (Connection conn = ConnectionManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -151,14 +151,34 @@ public class JdbcEvenementDAO implements EvenementDAO {
 
     @Override
     public void update(Evenement e) {
-        String sql = "UPDATE evenement SET nbreplacesrestantes = ? WHERE id_evenement = ?";
+        String sql = """
+            UPDATE evenement SET 
+                titre = ?,
+                description = ?,
+                dateevenement = ?,
+                lieu = ?,
+                nbreplacetotale = ?,
+                nbreplacesrestantes = ?,
+                prix_base = ?
+            WHERE id_evenement = ?
+            """;
         try (Connection conn = ConnectionManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, e.getNbPlacesRestantes());
-            ps.setLong(2, e.getId());
-            ps.executeUpdate();
+            ps.setString(1, e.getTitre());
+            ps.setString(2, e.getDescription());
+            ps.setTimestamp(3, Timestamp.valueOf(e.getDateEvenement()));
+            ps.setString(4, e.getLieu());
+            ps.setInt(5, e.getNbPlacesTotales());
+            ps.setInt(6, e.getNbPlacesRestantes());
+            ps.setBigDecimal(7, e.getPrixBase());
+            ps.setLong(8, e.getId());
+            
+            int rows = ps.executeUpdate();
+            if (rows == 0) {
+                throw new DaoException("Aucun événement trouvé avec l'ID: " + e.getId());
+            }
         } catch (SQLException ex) {
-            throw new DaoException("Erreur update event", ex);
+            throw new DaoException("Erreur lors de la mise à jour de l'événement ID: " + e.getId(), ex);
         }
     }
 }

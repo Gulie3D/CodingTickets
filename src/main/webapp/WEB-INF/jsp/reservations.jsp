@@ -1,24 +1,34 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%-- IMPORTANT : URI Jakarta pour Tomcat 10/11 --%>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
-<%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <title>Mes Réservations</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Réservations - CodingTickets</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/reservations.css">
 </head>
-<body class="bg-light">
+<body>
 
-<nav class="navbar navbar-dark bg-dark mb-4">
+<nav class="navbar">
     <div class="container">
-        <span class="navbar-brand">Mes Réservations</span>
-        <a href="${pageContext.request.contextPath}/events" class="btn btn-outline-light btn-sm">Retour aux événements</a>
+        <a class="navbar-brand" href="${pageContext.request.contextPath}/events">CodingTickets</a>
+        <div class="navbar-actions">
+            <span class="user-info">${sessionScope.user.nom} (${sessionScope.user.role})</span>
+            <a href="${pageContext.request.contextPath}/events" class="btn btn-outline-primary btn-sm">Événements</a>
+            <a href="${pageContext.request.contextPath}/logout" class="btn btn-secondary btn-sm">Déconnexion</a>
+        </div>
     </div>
 </nav>
 
-<div class="container">
+<div class="page-container">
+    <div class="mb-4">
+        <h1 class="page-title">Mes réservations</h1>
+        <p class="page-subtitle">Historique de vos réservations</p>
+    </div>
 
     <c:if test="${not empty param.success}">
         <div class="alert alert-success">${param.success}</div>
@@ -27,27 +37,35 @@
         <div class="alert alert-danger">${param.error}</div>
     </c:if>
 
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <table class="table table-striped mb-0 align-middle">
-                <thead class="table-primary">
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
                 <tr>
                     <th>Événement</th>
                     <th>Date</th>
                     <th>Places</th>
-                    <th>Total</th>
+                    <th>Montant</th>
                     <th>Statut</th>
-                    <th>Action</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
-                <%-- Boucle standard JSTL sans conflit --%>
                 <c:forEach items="${reservations}" var="res">
                     <tr>
-                        <td class="fw-bold">${res.evenement.titre}</td>
-                        <td>${res.evenement.dateEvenement}</td>
-                        <td>${res.nbPlaces}</td>
-                        <td>${res.montantTotal} €</td>
+                        <td>
+                            <strong>${res.evenement.titre}</strong>
+                            <div class="text-muted text-small">${res.evenement.lieu}</div>
+                        </td>
+                        <td>
+                            <span class="text-small">${res.evenement.dateFormatee}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">${res.nbPlaces} place(s)</span>
+                        </td>
+                        <td>
+                            <strong>${res.montantTotal}€</strong>
+                        </td>
                         <td>
                             <c:choose>
                                 <c:when test="${res.statut == 'CONFIRMEE'}">
@@ -56,23 +74,33 @@
                                 <c:when test="${res.statut == 'ANNULEE'}">
                                     <span class="badge bg-danger">Annulée</span>
                                 </c:when>
-                                <c:otherwise><span class="badge bg-secondary">${res.statut}</span></c:otherwise>
+                                <c:otherwise>
+                                    <span class="badge bg-secondary">${res.statut}</span>
+                                </c:otherwise>
                             </c:choose>
                         </td>
-                        <td>
+                        <td class="text-end">
                             <c:if test="${res.statut == 'CONFIRMEE'}">
-                                <form action="${pageContext.request.contextPath}/reservations/cancel" method="post" onsubmit="return confirm('Voulez-vous vraiment annuler ?');">
+                                <form action="${pageContext.request.contextPath}/reservations/cancel" method="post"
+                                      onsubmit="return confirm('Annuler cette réservation ?');">
                                     <input type="hidden" name="reservationId" value="${res.id}">
-                                    <button type="submit" class="btn btn-danger btn-sm">Annuler</button>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Annuler</button>
                                 </form>
                             </c:if>
                         </td>
                     </tr>
                 </c:forEach>
 
-                <%--@elvariable id="reservations" type=""--%>
                 <c:if test="${empty reservations}">
-                    <tr><td colspan="6" class="text-center py-4">Aucune réservation trouvée.</td></tr>
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <h5>Aucune réservation</h5>
+                            <p>Vous n'avez pas encore de réservation.</p>
+                            <a href="${pageContext.request.contextPath}/events" class="btn btn-primary">
+                                Voir les événements
+                            </a>
+                        </td>
+                    </tr>
                 </c:if>
                 </tbody>
             </table>
