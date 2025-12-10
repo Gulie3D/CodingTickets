@@ -7,6 +7,7 @@ import org.example.codingtickets.dao.jdbc.JdbcEvenementDAO;
 import org.example.codingtickets.dao.jdbc.JdbcReservationDAO;
 import org.example.codingtickets.dao.jdbc.JdbcUtilisateurDAO;
 import org.example.codingtickets.model.*;
+import org.example.codingtickets.utils.PasswordUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -27,7 +28,14 @@ public class TicketService {
      * Authentification via la BDD
      */
     public Utilisateur authentifier(String email, String motDePasse) {
-        return utilisateurDao.findByEmailAndPassword(email, motDePasse);
+        Utilisateur utilisateur = utilisateurDao.findByEmail(email);
+
+        if (utilisateur != null &&
+                PasswordUtils.checkPassword(motDePasse, utilisateur.getMotDePasse())) {
+            return utilisateur;
+        }
+
+        return null;
     }
 
     /**

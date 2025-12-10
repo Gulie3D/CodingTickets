@@ -20,6 +20,8 @@ public interface UtilisateurDAO {
 
     Utilisateur findByEmailAndPassword(String email, String password);
 
+    Utilisateur findByEmail(String email);
+
     /**
      * Récupère tous les utilisateurs ayant le rôle CLIENT.
      * @return Liste des clients

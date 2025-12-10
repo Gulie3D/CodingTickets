@@ -7,6 +7,7 @@ import org.example.codingtickets.model.Client;
 import org.example.codingtickets.model.Organisateur;
 import org.example.codingtickets.model.Role;
 import org.example.codingtickets.model.Utilisateur;
+import org.example.codingtickets.utils.PasswordUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -14,6 +15,34 @@ import java.util.List;
 import java.util.Optional;
 
 public class JdbcUtilisateurDAO implements UtilisateurDAO {
+
+    @Override
+    public Utilisateur findByEmail(String email) {
+        String sql = "SELECT id, nom, email, mot_de_passe, role FROM utilisateur WHERE email = ?";
+
+        try (Connection conn = ConnectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Utilisateur u = new Utilisateur();
+                    u.setId(rs.getLong("id"));
+                    u.setNom(rs.getString("nom"));
+                    u.setEmail(rs.getString("email"));
+                    u.setMotDePasse(rs.getString("mot_de_passe")); // <-- hash stocké
+                    u.setRole(Role.valueOf(rs.getString("role")));
+                    return u;
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la recherche utilisateur par email", e);
+        }
+
+        return null;
+    }
 
     @Override
     public Utilisateur findById(long id) {
@@ -95,7 +124,10 @@ public class JdbcUtilisateurDAO implements UtilisateurDAO {
 
             ps.setString(1, utilisateur.getNom());
             ps.setString(2, utilisateur.getEmail());
-            ps.setString(3, utilisateur.getMotDePasse());
+
+            // 🔐 Hash du mot de passe AVANT l'insert
+            String hashedPassword = PasswordUtils.hashPassword(utilisateur.getMotDePasse());
+            ps.setString(3, hashedPassword);
 
             if (utilisateur.getRole() == null) {
                 throw new DaoException("Impossible de sauvegarder : Le rôle de l'utilisateur est manquant.");
