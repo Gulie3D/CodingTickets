@@ -1,6 +1,7 @@
 package org.example.codingtickets.service;
 
 import org.example.codingtickets.model.*;
+import org.example.codingtickets.utils.PasswordUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,35 +33,35 @@ public class TicketService {
                 userIdGen.getAndIncrement(),
                 "Bob Organisateur",
                 "bob_organisateur@coding.fr",
-                "bob123"
+                PasswordUtils.hashPassword("bob123")
         );
 
         Organisateur orgMarie = new Organisateur(
                 userIdGen.getAndIncrement(),
                 "Marie Organisatrice",
                 "marie_organisatrice@coding.fr",
-                "marie123"
+                PasswordUtils.hashPassword("marie123")
         );
 
         Client clientAlice = new Client(
                 userIdGen.getAndIncrement(),
                 "Alice Cliente",
                 "alice_cliente@coding.fr",
-                "alice123"
+                PasswordUtils.hashPassword("alice123")
         );
 
         Client clientCharlie = new Client(
                 userIdGen.getAndIncrement(),
                 "Charlie Client",
                 "charlie_client@coding.fr",
-                "charlie123"
+                PasswordUtils.hashPassword("charlie123")
         );
 
         Client clientDiana = new Client(
                 userIdGen.getAndIncrement(),
                 "Diana Cliente",
                 "diana_cliente@coding.fr",
-                "diana123"
+                PasswordUtils.hashPassword("diana123")
         );
 
         utilisateurs.add(orgBob);
@@ -158,7 +159,7 @@ public class TicketService {
     public Utilisateur authentifier(String email, String motDePasse) {
         return utilisateurs.stream()
                 .filter(u -> u.getEmail().equalsIgnoreCase(email)
-                        && u.getMotDePasse().equals(motDePasse))
+                        && PasswordUtils.checkPassword(motDePasse, u.getMotDePasse()))
                 .findFirst()
                 .orElse(null);
     }
