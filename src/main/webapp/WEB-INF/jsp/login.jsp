@@ -1,13 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - CodingTickets</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css">
 </head>
@@ -23,24 +21,24 @@
         </c:if>
 
         <form action="${pageContext.request.contextPath}/login" method="post">
-            <div class="mb-3">
+            <div class="form-group">
                 <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control" id="email" name="email" 
                        required placeholder="exemple@email.com">
             </div>
 
-            <div class="mb-4">
+            <div class="form-group">
                 <label for="password" class="form-label">Mot de passe</label>
                 <input type="password" class="form-control" id="password" name="password" 
                        required placeholder="••••••••">
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+            <button type="submit" class="btn btn-primary btn-full">Se connecter</button>
         </form>
 
         <div class="divider"></div>
         
-        <p class="text-center text-muted mb-3" style="font-size: 0.8125rem;">Comptes de démonstration</p>
+        <p class="demo-title">Comptes de démonstration</p>
         
         <div class="demo-accounts">
             <div class="demo-account">

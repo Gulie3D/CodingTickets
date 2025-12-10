@@ -1,13 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes Réservations - CodingTickets</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/reservations.css">
 </head>
@@ -25,7 +23,7 @@
 </nav>
 
 <div class="page-container">
-    <div class="mb-4">
+    <div class="page-header">
         <h1 class="page-title">Mes réservations</h1>
         <p class="page-subtitle">Historique de vos réservations</p>
     </div>
@@ -38,9 +36,8 @@
     </c:if>
 
     <div class="card">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
+        <table class="table">
+            <thead>
                 <tr>
                     <th>Événement</th>
                     <th>Date</th>
@@ -49,23 +46,17 @@
                     <th>Statut</th>
                     <th></th>
                 </tr>
-                </thead>
-                <tbody>
+            </thead>
+            <tbody>
                 <c:forEach items="${reservations}" var="res">
                     <tr>
                         <td>
                             <strong>${res.evenement.titre}</strong>
                             <div class="text-muted text-small">${res.evenement.lieu}</div>
                         </td>
-                        <td>
-                            <span class="text-small">${res.evenement.dateFormatee}</span>
-                        </td>
-                        <td>
-                            <span class="badge bg-secondary">${res.nbPlaces} place(s)</span>
-                        </td>
-                        <td>
-                            <strong>${res.montantTotal}€</strong>
-                        </td>
+                        <td>${res.evenement.dateFormatee}</td>
+                        <td><span class="badge">${res.nbPlaces} place(s)</span></td>
+                        <td><strong>${res.montantTotal}€</strong></td>
                         <td>
                             <c:choose>
                                 <c:when test="${res.statut == 'CONFIRMEE'}">
@@ -75,11 +66,11 @@
                                     <span class="badge bg-danger">Annulée</span>
                                 </c:when>
                                 <c:otherwise>
-                                    <span class="badge bg-secondary">${res.statut}</span>
+                                    <span class="badge">${res.statut}</span>
                                 </c:otherwise>
                             </c:choose>
                         </td>
-                        <td class="text-end">
+                        <td>
                             <c:if test="${res.statut == 'CONFIRMEE'}">
                                 <form action="${pageContext.request.contextPath}/reservations/cancel" method="post"
                                       onsubmit="return confirm('Annuler cette réservation ?');">
@@ -96,15 +87,12 @@
                         <td colspan="6" class="empty-state">
                             <h5>Aucune réservation</h5>
                             <p>Vous n'avez pas encore de réservation.</p>
-                            <a href="${pageContext.request.contextPath}/events" class="btn btn-primary">
-                                Voir les événements
-                            </a>
+                            <a href="${pageContext.request.contextPath}/events" class="btn btn-primary">Voir les événements</a>
                         </td>
                     </tr>
                 </c:if>
-                </tbody>
-            </table>
-        </div>
+            </tbody>
+        </table>
     </div>
 </div>
 
