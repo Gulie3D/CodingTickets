@@ -1,13 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes Événements - CodingTickets</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/my-events.css">
 </head>
@@ -26,16 +24,17 @@
 </nav>
 
 <div class="page-container">
-    <div class="mb-4">
+    <div class="page-header">
         <h1 class="page-title">Mes événements</h1>
         <p class="page-subtitle">Gérez les événements que vous avez créés</p>
     </div>
 
     <c:if test="${not empty param.success}">
-        <div class="alert alert-success">${param.success}</div>
+        <div class="alert alert-success">Événement modifié avec succès</div>
     </c:if>
-    <c:if test="${not empty param.error}">
-        <div class="alert alert-danger">${param.error}</div>
+    <c:if test="${not empty sessionScope.success}">
+        <div class="alert alert-success">${sessionScope.success}</div>
+        <c:remove var="success" scope="session"/>
     </c:if>
     <c:if test="${not empty sessionScope.error}">
         <div class="alert alert-danger">${sessionScope.error}</div>
@@ -43,9 +42,8 @@
     </c:if>
 
     <div class="card">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
+        <table class="table">
+            <thead>
                 <tr>
                     <th>Événement</th>
                     <th>Date</th>
@@ -54,8 +52,8 @@
                     <th>Recette</th>
                     <th></th>
                 </tr>
-                </thead>
-                <tbody>
+            </thead>
+            <tbody>
                 <c:forEach items="${myEvents}" var="ev">
                     <c:set var="reservees" value="${ev.nbPlacesTotales - ev.nbPlacesRestantes}" />
                     <tr>
@@ -63,31 +61,25 @@
                             <strong>${ev.titre}</strong>
                             <div class="text-muted text-small">${ev.description}</div>
                         </td>
+                        <td>${ev.dateFormatee}</td>
+                        <td>${ev.lieu}</td>
                         <td>
-                            <span class="text-small">${ev.dateFormatee}</span>
-                        </td>
-                        <td class="text-small">${ev.lieu}</td>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="progress" style="width: 50px;">
-                                    <div class="progress-bar ${ev.nbPlacesRestantes == 0 ? 'bg-danger' : 'bg-success'}"
-                                         style="width: ${(reservees / ev.nbPlacesTotales) * 100}%">
-                                    </div>
+                            <div class="places-info">
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill ${ev.nbPlacesRestantes == 0 ? 'full' : ''}"
+                                         style="width: ${(reservees / ev.nbPlacesTotales) * 100}%"></div>
                                 </div>
-                                <span class="text-small">${reservees}/${ev.nbPlacesTotales}</span>
+                                <span>${reservees}/${ev.nbPlacesTotales}</span>
                             </div>
                         </td>
+                        <td><strong class="text-success">${reservees * ev.prixBase}€</strong></td>
                         <td>
-                            <strong class="text-success">${reservees * ev.prixBase}€</strong>
-                        </td>
-                        <td class="text-end">
-                            <div class="d-flex gap-1 justify-content-end">
-                                <a href="${pageContext.request.contextPath}/events/edit?id=${ev.id}" 
-                                   class="btn btn-outline-primary btn-sm">Modifier</a>
+                            <div class="actions">
+                                <a href="${pageContext.request.contextPath}/events/edit?id=${ev.id}" class="btn btn-outline-primary btn-sm">Modifier</a>
                                    
                                 <c:choose>
                                     <c:when test="${reservees == 0}">
-                                        <form action="${pageContext.request.contextPath}/events/delete" method="post" style="display: inline;"
+                                        <form action="${pageContext.request.contextPath}/events/delete" method="post"
                                               onsubmit="return confirm('Supprimer cet événement ?');">
                                             <input type="hidden" name="eventId" value="${ev.id}">
                                             <button type="submit" class="btn btn-outline-danger btn-sm">Supprimer</button>
@@ -108,15 +100,12 @@
                         <td colspan="6" class="empty-state">
                             <h5>Aucun événement créé</h5>
                             <p>Créez votre premier événement.</p>
-                            <a href="${pageContext.request.contextPath}/events/create" class="btn btn-primary">
-                                + Créer un événement
-                            </a>
+                            <a href="${pageContext.request.contextPath}/events/create" class="btn btn-primary">+ Créer un événement</a>
                         </td>
                     </tr>
                 </c:if>
-                </tbody>
-            </table>
-        </div>
+            </tbody>
+        </table>
     </div>
 </div>
 

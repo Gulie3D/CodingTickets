@@ -10,8 +10,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      # On map le port 5432 du conteneur vers le 5433 de ton PC
-      # (pour ne pas entrer en conflit si tu as déjà un Postgres lancé sur 5432)
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -23,16 +21,12 @@ services:
     build: . # Construit l'image depuis le Dockerfile courant
     container_name: app-tickets-tomcat
     ports:
-      # On accèdera au site via http://localhost:8888
       - "8888:8080"
     depends_on:
       - db
     environment:
-      # C'est ici que la magie opère :
-      # On remplace "localhost" par "db" (le nom du service ci-dessus)
       DB_URL: jdbc:postgresql://db:5432/codingtickets
       DB_USER: postgres
       DB_PASSWORD: postgres
-
 volumes:
   pgdata:
